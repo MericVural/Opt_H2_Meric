@@ -98,3 +98,47 @@ If you use this framework, please cite:
 ## License
 
 See the LICENSE file for licensing details.
+
+------------------------------------------------------------------------
+
+## Repository Structure
+
+The repository is organized as a modular workflow, starting from data preparation and preprocessing, followed by global optimization, post-processing, sensitivity analyses, and figure generation.
+
+### Main workflow
+
+| File | Description |
+|------|-------------|
+| **0_init_dbs_export_GHGs.ipynb** | Initializes the Brightway databases and exports life-cycle greenhouse gas emission factors used throughout the environmental assessment. |
+| **1_fetch_power_prices.py** | Downloads and processes spatially explicit electricity price datasets used as optimization inputs. |
+| **2_geo_plot_and_export.ipynb** | Processes geospatial datasets, visualizes intermediate results, and exports global input layers. |
+| **3_main_global_preprocess.py** | Preprocesses renewable resource data, technology parameters, and optimization inputs before model execution. |
+| **4_main_global.py** | Main optimization workflow for hybrid and off-grid decentralized ammonia production systems. |
+| **5_main_global_grid_connected.py** | Optimization workflow for fully grid-connected ammonia production systems. |
+| **6_case_studies_now_and_prospective.py** | Performs detailed present-day and prospective (2050) case study analyses. |
+| **7_sensitivity_analysis_case_studies.py** | Runs sensitivity analyses for the selected case study locations. |
+| **8_additional_sens_analysis.py** | Performs additional global sensitivity and uncertainty analyses reported in the manuscript. |
+| **9_create_figures.ipynb** | Generates the main manuscript figures from processed optimization outputs. |
+| **10_sensitivity_figures_ammonia.ipynb** | Produces publication-quality figures for the sensitivity analyses. |
+
+### Supporting modules
+
+| File | Purpose |
+|------|---------|
+| **opt_ammonia_functions.py** | Core MILP optimization model and helper routines. |
+| **energy_data_processor.py** | Processing of renewable energy profiles and energy datasets. |
+| **calculate_renewable_yield.py** | Calculates location-specific solar and wind yields. |
+| **create_db_lca_functions.py** | Functions supporting the Brightway life-cycle assessment workflow. |
+| **mapping.py** | Mapping utilities linking model outputs to environmental inventories and spatial datasets. |
+| **config.py** | Central configuration file containing paths, scenarios, and model settings. |
+| **lcf_opt.yml** | Conda environment specification with all required dependencies. |
+| **input_data/** | Input datasets for techno-economic, geospatial, and environmental analyses. |
+
+### Typical workflow
+
+1. Initialize the environmental databases (`0_init_dbs_export_GHGs.ipynb`).
+2. Prepare electricity price and geospatial input data (`1`–`3`).
+3. Run the global optimization (`4` or `5`).
+4. Perform regional case studies (`6`).
+5. Conduct sensitivity analyses (`7` and `8`).
+6. Generate the manuscript figures (`9` and `10`).
