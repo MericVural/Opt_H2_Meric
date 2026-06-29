@@ -1,0 +1,1152 @@
+{
+  "results": {
+    "SI": {
+      "usd": 0.191,
+      "eur": 0.164,
+      "url": "https://www.globalpetrolprices.com/Slovenia/electricity_prices/",
+      "name": "Slovenia"
+    },
+    "DE": {
+      "usd": 0.288,
+      "eur": 0.248,
+      "url": "https://www.globalpetrolprices.com/Germany/electricity_prices/",
+      "name": "Germany"
+    },
+    "ES": {
+      "usd": 0.157,
+      "eur": 0.135,
+      "url": "https://www.globalpetrolprices.com/Spain/electricity_prices/",
+      "name": "Spain"
+    },
+    "FR": {
+      "usd": 0.176,
+      "eur": 0.151,
+      "url": "https://www.globalpetrolprices.com/France/electricity_prices/",
+      "name": "France"
+    },
+    "PL - Polski": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/PL---Polski/electricity_prices/",
+      "name": "PL - Polski"
+    },
+    "SRB - Srpski": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/SRB---Srpski/electricity_prices/",
+      "name": "SRB - Srpski"
+    },
+    "IT - Italiano": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/IT---Italiano/electricity_prices/",
+      "name": "IT - Italiano"
+    },
+    "FI - Suomi": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/FI---Suomi/electricity_prices/",
+      "name": "FI - Suomi"
+    },
+    "NL - Nederlands": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/NL---Nederlands/electricity_prices/",
+      "name": "NL - Nederlands"
+    },
+    "DK - Dansk": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/DK---Dansk/electricity_prices/",
+      "name": "DK - Dansk"
+    },
+    "NO - Norsk": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/NO---Norsk/electricity_prices/",
+      "name": "NO - Norsk"
+    },
+    "Electricity prices": {
+      "usd": 0.274,
+      "eur": 0.236,
+      "url": "https://www.globalpetrolprices.com/Electricity-prices/electricity_prices/",
+      "name": "Electricity prices"
+    },
+    "BM": {
+      "usd": 0.249,
+      "eur": 0.214,
+      "url": "https://www.globalpetrolprices.com/Bermuda/electricity_prices/",
+      "name": "Bermuda"
+    },
+    "IE": {
+      "usd": 0.452,
+      "eur": 0.389,
+      "url": "https://www.globalpetrolprices.com/Ireland/electricity_prices/",
+      "name": "Ireland"
+    },
+    "IT": {
+      "usd": 0.39,
+      "eur": 0.335,
+      "url": "https://www.globalpetrolprices.com/Italy/electricity_prices/",
+      "name": "Italy"
+    },
+    "KY": {
+      "usd": 0.342,
+      "eur": 0.294,
+      "url": "https://www.globalpetrolprices.com/Cayman-Islands/electricity_prices/",
+      "name": "Cayman Islands"
+    },
+    "LI": {
+      "usd": 0.254,
+      "eur": 0.218,
+      "url": "https://www.globalpetrolprices.com/Liechtenstein/electricity_prices/",
+      "name": "Liechtenstein"
+    },
+    "BE": {
+      "usd": 0.277,
+      "eur": 0.238,
+      "url": "https://www.globalpetrolprices.com/Belgium/electricity_prices/",
+      "name": "Belgium"
+    },
+    "GB": {
+      "usd": 0.451,
+      "eur": 0.388,
+      "url": "https://www.globalpetrolprices.com/United-Kingdom/electricity_prices/",
+      "name": "UK"
+    },
+    "CH": {
+      "usd": 0.292,
+      "eur": 0.251,
+      "url": "https://www.globalpetrolprices.com/Switzerland/electricity_prices/",
+      "name": "Switzerland"
+    },
+    "DK": {
+      "usd": 0.3,
+      "eur": 0.258,
+      "url": "https://www.globalpetrolprices.com/Denmark/electricity_prices/",
+      "name": "Denmark"
+    },
+    "BS": {
+      "usd": 0.369,
+      "eur": 0.317,
+      "url": "https://www.globalpetrolprices.com/Bahamas/electricity_prices/",
+      "name": "Bahamas"
+    },
+    "CZ": {
+      "usd": 0.221,
+      "eur": 0.19,
+      "url": "https://www.globalpetrolprices.com/Czech-Republic/electricity_prices/",
+      "name": "Czech Republic"
+    },
+    "AT": {
+      "usd": 0.309,
+      "eur": 0.266,
+      "url": "https://www.globalpetrolprices.com/Austria/electricity_prices/",
+      "name": "Austria"
+    },
+    "CY": {
+      "usd": 0.3,
+      "eur": 0.258,
+      "url": "https://www.globalpetrolprices.com/Cyprus/electricity_prices/",
+      "name": "Cyprus"
+    },
+    "CV": {
+      "usd": 0.211,
+      "eur": 0.181,
+      "url": "https://www.globalpetrolprices.com/Cape-Verde/electricity_prices/",
+      "name": "Cape Verde"
+    },
+    "BB": {
+      "usd": 0.337,
+      "eur": 0.29,
+      "url": "https://www.globalpetrolprices.com/Barbados/electricity_prices/",
+      "name": "Barbados"
+    },
+    "GT": {
+      "usd": 0.196,
+      "eur": 0.169,
+      "url": "https://www.globalpetrolprices.com/Guatemala/electricity_prices/",
+      "name": "Guatemala"
+    },
+    "EE": {
+      "usd": 0.169,
+      "eur": 0.145,
+      "url": "https://www.globalpetrolprices.com/Estonia/electricity_prices/",
+      "name": "Estonia"
+    },
+    "NL": {
+      "usd": 0.239,
+      "eur": 0.206,
+      "url": "https://www.globalpetrolprices.com/Netherlands/electricity_prices/",
+      "name": "Netherlands"
+    },
+    "JM": {
+      "usd": 0.215,
+      "eur": 0.185,
+      "url": "https://www.globalpetrolprices.com/Jamaica/electricity_prices/",
+      "name": "Jamaica"
+    },
+    "LV": {
+      "usd": 0.164,
+      "eur": 0.141,
+      "url": "https://www.globalpetrolprices.com/Latvia/electricity_prices/",
+      "name": "Latvia"
+    },
+    "LT": {
+      "usd": 0.216,
+      "eur": 0.186,
+      "url": "https://www.globalpetrolprices.com/Lithuania/electricity_prices/",
+      "name": "Lithuania"
+    },
+    "AU": {
+      "usd": 0.262,
+      "eur": 0.225,
+      "url": "https://www.globalpetrolprices.com/Australia/electricity_prices/",
+      "name": "Australia"
+    },
+    "LU": {
+      "usd": 0.239,
+      "eur": 0.206,
+      "url": "https://www.globalpetrolprices.com/Luxembourg/electricity_prices/",
+      "name": "Luxembourg"
+    },
+    "UY": {
+      "usd": 0.13,
+      "eur": 0.112,
+      "url": "https://www.globalpetrolprices.com/Uruguay/electricity_prices/",
+      "name": "Uruguay"
+    },
+    "SV": {
+      "usd": 0.24,
+      "eur": 0.206,
+      "url": "https://www.globalpetrolprices.com/El-Salvador/electricity_prices/",
+      "name": "El Salvador"
+    },
+    "GR": {
+      "usd": 0.29,
+      "eur": 0.249,
+      "url": "https://www.globalpetrolprices.com/Greece/electricity_prices/",
+      "name": "Greece"
+    },
+    "HN": {
+      "usd": 0.243,
+      "eur": 0.209,
+      "url": "https://www.globalpetrolprices.com/Honduras/electricity_prices/",
+      "name": "Honduras"
+    },
+    "PT": {
+      "usd": 0.171,
+      "eur": 0.147,
+      "url": "https://www.globalpetrolprices.com/Portugal/electricity_prices/",
+      "name": "Portugal"
+    },
+    "SG": {
+      "usd": 0.223,
+      "eur": 0.192,
+      "url": "https://www.globalpetrolprices.com/Singapore/electricity_prices/",
+      "name": "Singapore"
+    },
+    "SE": {
+      "usd": 0.257,
+      "eur": 0.221,
+      "url": "https://www.globalpetrolprices.com/Sweden/electricity_prices/",
+      "name": "Sweden"
+    },
+    "PL": {
+      "usd": 0.276,
+      "eur": 0.237,
+      "url": "https://www.globalpetrolprices.com/Poland/electricity_prices/",
+      "name": "Poland"
+    },
+    "JP": {
+      "usd": 0.189,
+      "eur": 0.163,
+      "url": "https://www.globalpetrolprices.com/Japan/electricity_prices/",
+      "name": "Japan"
+    },
+    "SL": {
+      "usd": 0.342,
+      "eur": 0.294,
+      "url": "https://www.globalpetrolprices.com/Sierra-Leone/electricity_prices/",
+      "name": "Sierra Leone"
+    },
+    "KE": {
+      "usd": 0.174,
+      "eur": 0.15,
+      "url": "https://www.globalpetrolprices.com/Kenya/electricity_prices/",
+      "name": "Kenya"
+    },
+    "ML": {
+      "usd": 0.167,
+      "eur": 0.144,
+      "url": "https://www.globalpetrolprices.com/Mali/electricity_prices/",
+      "name": "Mali"
+    },
+    "BZ": {
+      "usd": 0.174,
+      "eur": 0.15,
+      "url": "https://www.globalpetrolprices.com/Belize/electricity_prices/",
+      "name": "Belize"
+    },
+    "AW": {
+      "usd": 0.303,
+      "eur": 0.261,
+      "url": "https://www.globalpetrolprices.com/Aruba/electricity_prices/",
+      "name": "Aruba"
+    },
+    "CL": {
+      "usd": 0.189,
+      "eur": 0.163,
+      "url": "https://www.globalpetrolprices.com/Chile/electricity_prices/",
+      "name": "Chile"
+    },
+    "SK": {
+      "usd": 0.188,
+      "eur": 0.162,
+      "url": "https://www.globalpetrolprices.com/Slovakia/electricity_prices/",
+      "name": "Slovakia"
+    },
+    "BF": {
+      "usd": 0.23,
+      "eur": 0.198,
+      "url": "https://www.globalpetrolprices.com/Burkina-Faso/electricity_prices/",
+      "name": "Burkina Faso"
+    },
+    "NZ": {
+      "usd": 0.193,
+      "eur": 0.166,
+      "url": "https://www.globalpetrolprices.com/New-Zealand/electricity_prices/",
+      "name": "New Zealand"
+    },
+    "GA": {
+      "usd": 0.176,
+      "eur": 0.151,
+      "url": "https://www.globalpetrolprices.com/Gabon/electricity_prices/",
+      "name": "Gabon"
+    },
+    "PH": {
+      "usd": 0.151,
+      "eur": 0.13,
+      "url": "https://www.globalpetrolprices.com/Philippines/electricity_prices/",
+      "name": "Philippines"
+    },
+    "CO": {
+      "usd": 0.229,
+      "eur": 0.197,
+      "url": "https://www.globalpetrolprices.com/Colombia/electricity_prices/",
+      "name": "Colombia"
+    },
+    "RW": {
+      "usd": 0.066,
+      "eur": 0.057,
+      "url": "https://www.globalpetrolprices.com/Rwanda/electricity_prices/",
+      "name": "Rwanda"
+    },
+    "AD": {
+      "usd": 0.0,
+      "eur": 0.0,
+      "url": "https://www.globalpetrolprices.com/Andorra/electricity_prices/",
+      "name": "Andorra"
+    },
+    "TG": {
+      "usd": 0.188,
+      "eur": 0.162,
+      "url": "https://www.globalpetrolprices.com/Togo/electricity_prices/",
+      "name": "Togo"
+    },
+    "ZA": {
+      "usd": 0.102,
+      "eur": 0.088,
+      "url": "https://www.globalpetrolprices.com/South-Africa/electricity_prices/",
+      "name": "South Africa"
+    },
+    "PE": {
+      "usd": 0.178,
+      "eur": 0.153,
+      "url": "https://www.globalpetrolprices.com/Peru/electricity_prices/",
+      "name": "Peru"
+    },
+    "RO": {
+      "usd": 0.236,
+      "eur": 0.203,
+      "url": "https://www.globalpetrolprices.com/Romania/electricity_prices/",
+      "name": "Romania"
+    },
+    "HK": {
+      "usd": 0.175,
+      "eur": 0.15,
+      "url": "https://www.globalpetrolprices.com/Hong-Kong/electricity_prices/",
+      "name": "Hong Kong"
+    },
+    "SN": {
+      "usd": 0.192,
+      "eur": 0.165,
+      "url": "https://www.globalpetrolprices.com/Senegal/electricity_prices/",
+      "name": "Senegal"
+    },
+    "FI": {
+      "usd": 0.111,
+      "eur": 0.095,
+      "url": "https://www.globalpetrolprices.com/Finland/electricity_prices/",
+      "name": "Finland"
+    },
+    "US": {
+      "usd": 0.149,
+      "eur": 0.128,
+      "url": "https://www.globalpetrolprices.com/USA/electricity_prices/",
+      "name": "USA"
+    },
+    "IL": {
+      "usd": 0.111,
+      "eur": 0.095,
+      "url": "https://www.globalpetrolprices.com/Israel/electricity_prices/",
+      "name": "Israel"
+    },
+    "NI": {
+      "usd": 0.211,
+      "eur": 0.181,
+      "url": "https://www.globalpetrolprices.com/Nicaragua/electricity_prices/",
+      "name": "Nicaragua"
+    },
+    "PA": {
+      "usd": 0.195,
+      "eur": 0.168,
+      "url": "https://www.globalpetrolprices.com/Panama/electricity_prices/",
+      "name": "Panama"
+    },
+    "IS": {
+      "usd": 0.098,
+      "eur": 0.084,
+      "url": "https://www.globalpetrolprices.com/Iceland/electricity_prices/",
+      "name": "Iceland"
+    },
+    "HR": {
+      "usd": 0.161,
+      "eur": 0.138,
+      "url": "https://www.globalpetrolprices.com/Croatia/electricity_prices/",
+      "name": "Croatia"
+    },
+    "UG": {
+      "usd": 0.122,
+      "eur": 0.105,
+      "url": "https://www.globalpetrolprices.com/Uganda/electricity_prices/",
+      "name": "Uganda"
+    },
+    "MD": {
+      "usd": 0.207,
+      "eur": 0.178,
+      "url": "https://www.globalpetrolprices.com/Moldova/electricity_prices/",
+      "name": "Moldova"
+    },
+    "CR": {
+      "usd": 0.247,
+      "eur": 0.212,
+      "url": "https://www.globalpetrolprices.com/Costa-Rica/electricity_prices/",
+      "name": "Costa Rica"
+    },
+    "BR": {
+      "usd": 0.122,
+      "eur": 0.105,
+      "url": "https://www.globalpetrolprices.com/Brazil/electricity_prices/",
+      "name": "Brazil"
+    },
+    "NO": {
+      "usd": 0.093,
+      "eur": 0.08,
+      "url": "https://www.globalpetrolprices.com/Norway/electricity_prices/",
+      "name": "Norway"
+    },
+    "KH": {
+      "usd": 0.152,
+      "eur": 0.131,
+      "url": "https://www.globalpetrolprices.com/Cambodia/electricity_prices/",
+      "name": "Cambodia"
+    },
+    "BG": {
+      "usd": 0.153,
+      "eur": 0.132,
+      "url": "https://www.globalpetrolprices.com/Bulgaria/electricity_prices/",
+      "name": "Bulgaria"
+    },
+    "MT": {
+      "usd": 0.171,
+      "eur": 0.147,
+      "url": "https://www.globalpetrolprices.com/Malta/electricity_prices/",
+      "name": "Malta"
+    },
+    "NA": {
+      "usd": 0.149,
+      "eur": 0.128,
+      "url": "https://www.globalpetrolprices.com/Namibia/electricity_prices/",
+      "name": "Namibia"
+    },
+    "MU": {
+      "usd": 0.14,
+      "eur": 0.12,
+      "url": "https://www.globalpetrolprices.com/Mauritius/electricity_prices/",
+      "name": "Mauritius"
+    },
+    "GH": {
+      "usd": 0.151,
+      "eur": 0.13,
+      "url": "https://www.globalpetrolprices.com/Ghana/electricity_prices/",
+      "name": "Ghana"
+    },
+    "CI": {
+      "usd": 0.249,
+      "eur": 0.214,
+      "url": "https://www.globalpetrolprices.com/Ivory-Coast/electricity_prices/",
+      "name": "Ivory Coast"
+    },
+    "MG": {
+      "usd": 0.221,
+      "eur": 0.19,
+      "url": "https://www.globalpetrolprices.com/Madagascar/electricity_prices/",
+      "name": "Madagascar"
+    },
+    "TH": {
+      "usd": 0.131,
+      "eur": 0.113,
+      "url": "https://www.globalpetrolprices.com/Thailand/electricity_prices/",
+      "name": "Thailand"
+    },
+    "MZ": {
+      "usd": 0.08,
+      "eur": 0.069,
+      "url": "https://www.globalpetrolprices.com/Mozambique/electricity_prices/",
+      "name": "Mozambique"
+    },
+    "RS": {
+      "usd": 0.154,
+      "eur": 0.132,
+      "url": "https://www.globalpetrolprices.com/Serbia/electricity_prices/",
+      "name": "Serbia"
+    },
+    "MK": {
+      "usd": 0.3,
+      "eur": 0.258,
+      "url": "https://www.globalpetrolprices.com/Macedonia/electricity_prices/",
+      "name": "N. Maced."
+    },
+    "KR": {
+      "usd": 0.133,
+      "eur": 0.114,
+      "url": "https://www.globalpetrolprices.com/South-Korea/electricity_prices/",
+      "name": "South Korea"
+    },
+    "SZ": {
+      "usd": 0.096,
+      "eur": 0.083,
+      "url": "https://www.globalpetrolprices.com/Swaziland/electricity_prices/",
+      "name": "Swaziland"
+    },
+    "CA": {
+      "usd": 0.102,
+      "eur": 0.088,
+      "url": "https://www.globalpetrolprices.com/Canada/electricity_prices/",
+      "name": "Canada"
+    },
+    "LK": {
+      "usd": 0.054,
+      "eur": 0.046,
+      "url": "https://www.globalpetrolprices.com/Sri-Lanka/electricity_prices/",
+      "name": "Sri Lanka"
+    },
+    "MA": {
+      "usd": 0.115,
+      "eur": 0.099,
+      "url": "https://www.globalpetrolprices.com/Morocco/electricity_prices/",
+      "name": "Morocco"
+    },
+    "AL": {
+      "usd": 0.151,
+      "eur": 0.13,
+      "url": "https://www.globalpetrolprices.com/Albania/electricity_prices/",
+      "name": "Albania"
+    },
+    "Dom. Rep.": {
+      "usd": 0.158,
+      "eur": 0.136,
+      "url": "https://www.globalpetrolprices.com/Dominican-Republic/electricity_prices/",
+      "name": "Dom. Rep."
+    },
+    "AM": {
+      "usd": 0.111,
+      "eur": 0.095,
+      "url": "https://www.globalpetrolprices.com/Armenia/electricity_prices/",
+      "name": "Armenia"
+    },
+    "HU": {
+      "usd": 0.273,
+      "eur": 0.235,
+      "url": "https://www.globalpetrolprices.com/Hungary/electricity_prices/",
+      "name": "Hungary"
+    },
+    "MX": {
+      "usd": 0.212,
+      "eur": 0.182,
+      "url": "https://www.globalpetrolprices.com/Mexico/electricity_prices/",
+      "name": "Mexico"
+    },
+    "MV": {
+      "usd": 0.111,
+      "eur": 0.095,
+      "url": "https://www.globalpetrolprices.com/Maldives/electricity_prices/",
+      "name": "Maldives"
+    },
+    "LS": {
+      "usd": 0.023,
+      "eur": 0.02,
+      "url": "https://www.globalpetrolprices.com/Lesotho/electricity_prices/",
+      "name": "Lesotho"
+    },
+    "Bosnia & Herz.": {
+      "usd": 0.123,
+      "eur": 0.106,
+      "url": "https://www.globalpetrolprices.com/Bosnia-and-Herzegovina/electricity_prices/",
+      "name": "Bosnia & Herz."
+    },
+    "TW": {
+      "usd": 0.219,
+      "eur": 0.188,
+      "url": "https://www.globalpetrolprices.com/Taiwan/electricity_prices/",
+      "name": "Taiwan"
+    },
+    "EC": {
+      "usd": 0.095,
+      "eur": 0.082,
+      "url": "https://www.globalpetrolprices.com/Ecuador/electricity_prices/",
+      "name": "Ecuador"
+    },
+    "BW": {
+      "usd": 0.112,
+      "eur": 0.096,
+      "url": "https://www.globalpetrolprices.com/Botswana/electricity_prices/",
+      "name": "Botswana"
+    },
+    "ID": {
+      "usd": 0.067,
+      "eur": 0.058,
+      "url": "https://www.globalpetrolprices.com/Indonesia/electricity_prices/",
+      "name": "Indonesia"
+    },
+    "TZ": {
+      "usd": 0.096,
+      "eur": 0.083,
+      "url": "https://www.globalpetrolprices.com/Tanzania/electricity_prices/",
+      "name": "Tanzania"
+    },
+    "JO": {
+      "usd": 0.169,
+      "eur": 0.145,
+      "url": "https://www.globalpetrolprices.com/Jordan/electricity_prices/",
+      "name": "Jordan"
+    },
+    "MW": {
+      "usd": 0.169,
+      "eur": 0.145,
+      "url": "https://www.globalpetrolprices.com/Malawi/electricity_prices/",
+      "name": "Malawi"
+    },
+    "BY": {
+      "usd": 0.099,
+      "eur": 0.085,
+      "url": "https://www.globalpetrolprices.com/Belarus/electricity_prices/",
+      "name": "Belarus"
+    },
+    "CM": {
+      "usd": 0.186,
+      "eur": 0.16,
+      "url": "https://www.globalpetrolprices.com/Cameroon/electricity_prices/",
+      "name": "Cameroon"
+    },
+    "UA": {
+      "usd": 0.176,
+      "eur": 0.151,
+      "url": "https://www.globalpetrolprices.com/Ukraine/electricity_prices/",
+      "name": "Ukraine"
+    },
+    "UAE": {
+      "usd": 0.11,
+      "eur": 0.095,
+      "url": "https://www.globalpetrolprices.com/United-Arab-Emirates/electricity_prices/",
+      "name": "UAE"
+    },
+    "VN": {
+      "usd": 0.076,
+      "eur": 0.065,
+      "url": "https://www.globalpetrolprices.com/Vietnam/electricity_prices/",
+      "name": "Vietnam"
+    },
+    "IN": {
+      "usd": 0.121,
+      "eur": 0.104,
+      "url": "https://www.globalpetrolprices.com/India/electricity_prices/",
+      "name": "India"
+    },
+    "AR": {
+      "usd": 0.089,
+      "eur": 0.077,
+      "url": "https://www.globalpetrolprices.com/Argentina/electricity_prices/",
+      "name": "Argentina"
+    },
+    "CN": {
+      "usd": 0.111,
+      "eur": 0.095,
+      "url": "https://www.globalpetrolprices.com/China/electricity_prices/",
+      "name": "China"
+    },
+    "VE": {
+      "usd": 0.0,
+      "eur": 0.0,
+      "url": "https://www.globalpetrolprices.com/Venezuela/electricity_prices/",
+      "name": "Venezuela"
+    },
+    "GE": {
+      "usd": 0.1,
+      "eur": 0.086,
+      "url": "https://www.globalpetrolprices.com/Georgia/electricity_prices/",
+      "name": "Georgia"
+    },
+    "TN": {
+      "usd": 0.12,
+      "eur": 0.103,
+      "url": "https://www.globalpetrolprices.com/Tunisia/electricity_prices/",
+      "name": "Tunisia"
+    },
+    "Turkey": {
+      "usd": 0.103,
+      "eur": 0.089,
+      "url": "https://www.globalpetrolprices.com/Turkey/electricity_prices/",
+      "name": "Turkey"
+    },
+    "RU": {
+      "usd": 0.105,
+      "eur": 0.09,
+      "url": "https://www.globalpetrolprices.com/Russia/electricity_prices/",
+      "name": "Russia"
+    },
+    "PK": {
+      "usd": 0.149,
+      "eur": 0.128,
+      "url": "https://www.globalpetrolprices.com/Pakistan/electricity_prices/",
+      "name": "Pakistan"
+    },
+    "CD": {
+      "usd": 0.076,
+      "eur": 0.065,
+      "url": "https://www.globalpetrolprices.com/Democratic-Republic-of-the-Congo/electricity_prices/",
+      "name": "DR Congo"
+    },
+    "BD": {
+      "usd": 0.102,
+      "eur": 0.088,
+      "url": "https://www.globalpetrolprices.com/Bangladesh/electricity_prices/",
+      "name": "Bangladesh"
+    },
+    "Trinidad & Tobago": {
+      "usd": 0.053,
+      "eur": 0.046,
+      "url": "https://www.globalpetrolprices.com/Trinidad-and-Tobago/electricity_prices/",
+      "name": "Trinidad & Tobago"
+    },
+    "KZ": {
+      "usd": 0.07,
+      "eur": 0.06,
+      "url": "https://www.globalpetrolprices.com/Kazakhstan/electricity_prices/",
+      "name": "Kazakhstan"
+    },
+    "PY": {
+      "usd": 0.047,
+      "eur": 0.04,
+      "url": "https://www.globalpetrolprices.com/Paraguay/electricity_prices/",
+      "name": "Paraguay"
+    },
+    "SA": {
+      "usd": 0.069,
+      "eur": 0.059,
+      "url": "https://www.globalpetrolprices.com/Saudi-Arabia/electricity_prices/",
+      "name": "Saudi Arabia"
+    },
+    "AF": {
+      "usd": 0.098,
+      "eur": 0.084,
+      "url": "https://www.globalpetrolprices.com/Afghanistan/electricity_prices/",
+      "name": "Afghanistan"
+    },
+    "MY": {
+      "usd": 0.135,
+      "eur": 0.116,
+      "url": "https://www.globalpetrolprices.com/Malaysia/electricity_prices/",
+      "name": "Malaysia"
+    },
+    "BH": {
+      "usd": 0.077,
+      "eur": 0.066,
+      "url": "https://www.globalpetrolprices.com/Bahrain/electricity_prices/",
+      "name": "Bahrain"
+    },
+    "SR": {
+      "usd": 0.059,
+      "eur": 0.051,
+      "url": "https://www.globalpetrolprices.com/Suriname/electricity_prices/",
+      "name": "Suriname"
+    },
+    "AZ": {
+      "usd": 0.062,
+      "eur": 0.053,
+      "url": "https://www.globalpetrolprices.com/Azerbaijan/electricity_prices/",
+      "name": "Azerbaijan"
+    },
+    "NP": {
+      "usd": 0.065,
+      "eur": 0.056,
+      "url": "https://www.globalpetrolprices.com/Nepal/electricity_prices/",
+      "name": "Nepal"
+    },
+    "DZ": {
+      "usd": 0.036,
+      "eur": 0.031,
+      "url": "https://www.globalpetrolprices.com/Algeria/electricity_prices/",
+      "name": "Algeria"
+    },
+    "KW": {
+      "usd": 0.081,
+      "eur": 0.07,
+      "url": "https://www.globalpetrolprices.com/Kuwait/electricity_prices/",
+      "name": "Kuwait"
+    },
+    "NG": {
+      "usd": 0.046,
+      "eur": 0.04,
+      "url": "https://www.globalpetrolprices.com/Nigeria/electricity_prices/",
+      "name": "Nigeria"
+    },
+    "UZ": {
+      "usd": 0.075,
+      "eur": 0.065,
+      "url": "https://www.globalpetrolprices.com/Uzbekistan/electricity_prices/",
+      "name": "Uzbekistan"
+    },
+    "QA": {
+      "usd": 0.036,
+      "eur": 0.031,
+      "url": "https://www.globalpetrolprices.com/Qatar/electricity_prices/",
+      "name": "Qatar"
+    },
+    "OM": {
+      "usd": 0.156,
+      "eur": 0.134,
+      "url": "https://www.globalpetrolprices.com/Oman/electricity_prices/",
+      "name": "Oman"
+    },
+    "LA": {
+      "usd": 0.027,
+      "eur": 0.023,
+      "url": "https://www.globalpetrolprices.com/Laos/electricity_prices/",
+      "name": "Laos"
+    },
+    "MM": {
+      "usd": 0.144,
+      "eur": 0.124,
+      "url": "https://www.globalpetrolprices.com/Burma-Myanmar/electricity_prices/",
+      "name": "Burma"
+    },
+    "EG": {
+      "usd": 0.041,
+      "eur": 0.035,
+      "url": "https://www.globalpetrolprices.com/Egypt/electricity_prices/",
+      "name": "Egypt"
+    },
+    "ZM": {
+      "usd": 0.038,
+      "eur": 0.033,
+      "url": "https://www.globalpetrolprices.com/Zambia/electricity_prices/",
+      "name": "Zambia"
+    },
+    "CU": {
+      "usd": 0.006,
+      "eur": 0.005,
+      "url": "https://www.globalpetrolprices.com/Cuba/electricity_prices/",
+      "name": "Cuba"
+    },
+    "AO": {
+      "usd": 0.011,
+      "eur": 0.009,
+      "url": "https://www.globalpetrolprices.com/Angola/electricity_prices/",
+      "name": "Angola"
+    },
+    "BT": {
+      "usd": 0.018,
+      "eur": 0.015,
+      "url": "https://www.globalpetrolprices.com/Bhutan/electricity_prices/",
+      "name": "Bhutan"
+    },
+    "IQ": {
+      "usd": 0.046,
+      "eur": 0.04,
+      "url": "https://www.globalpetrolprices.com/Iraq/electricity_prices/",
+      "name": "Iraq"
+    },
+    "SY": {
+      "usd": 0.054,
+      "eur": 0.046,
+      "url": "https://www.globalpetrolprices.com/Syria/electricity_prices/",
+      "name": "Syria"
+    },
+    "KG": {
+      "usd": 0.041,
+      "eur": 0.035,
+      "url": "https://www.globalpetrolprices.com/Kyrgyzstan/electricity_prices/",
+      "name": "Kyrgyzstan"
+    },
+    "SD": {
+      "usd": 0.029,
+      "eur": 0.025,
+      "url": "https://www.globalpetrolprices.com/Sudan/electricity_prices/",
+      "name": "Sudan"
+    },
+    "ET": {
+      "usd": 0.012,
+      "eur": 0.01,
+      "url": "https://www.globalpetrolprices.com/Ethiopia/electricity_prices/",
+      "name": "Ethiopia"
+    },
+    "IR": {
+      "usd": 0.004,
+      "eur": 0.003,
+      "url": "https://www.globalpetrolprices.com/Iran/electricity_prices/",
+      "name": "Iran"
+    }
+  },
+  "missed": [
+    {
+      "name": "TR - Türkçe",
+      "iso": null,
+      "tried_slugs": [
+        "TR---Türkçe",
+        "tr---türkçe"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/tr---türkçe/electricity_prices/"
+    },
+    {
+      "name": "BG - Български",
+      "iso": null,
+      "tried_slugs": [
+        "BG---Български",
+        "bg---български"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/bg---български/electricity_prices/"
+    },
+    {
+      "name": "RU - Руский",
+      "iso": null,
+      "tried_slugs": [
+        "RU---Руский",
+        "ru---руский"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/ru---руский/electricity_prices/"
+    },
+    {
+      "name": "RO - Română",
+      "iso": null,
+      "tried_slugs": [
+        "RO---Română",
+        "ro---română"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/ro---română/electricity_prices/"
+    },
+    {
+      "name": "PT - Português",
+      "iso": null,
+      "tried_slugs": [
+        "PT---Português",
+        "pt---português"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/pt---português/electricity_prices/"
+    },
+    {
+      "name": "GR - Ελληνικά",
+      "iso": null,
+      "tried_slugs": [
+        "GR---Ελληνικά",
+        "gr---ελληνικά"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/gr---ελληνικά/electricity_prices/"
+    },
+    {
+      "name": "ZH - 简体中文",
+      "iso": null,
+      "tried_slugs": [
+        "ZH---简体中文",
+        "zh---简体中文"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/zh---简体中文/electricity_prices/"
+    },
+    {
+      "name": "AR - العربية",
+      "iso": null,
+      "tried_slugs": [
+        "AR---العربية",
+        "ar---العربية"
+      ],
+      "last_tried_url": "https://www.globalpetrolprices.com/ar---العربية/electricity_prices/"
+    }
+  ],
+  "numeric_map": {
+    "SI": 0.164,
+    "DE": 0.248,
+    "ES": 0.135,
+    "FR": 0.151,
+    "PL - Polski": 0.236,
+    "SRB - Srpski": 0.236,
+    "IT - Italiano": 0.236,
+    "FI - Suomi": 0.236,
+    "NL - Nederlands": 0.236,
+    "DK - Dansk": 0.236,
+    "NO - Norsk": 0.236,
+    "Electricity prices": 0.236,
+    "BM": 0.214,
+    "IE": 0.389,
+    "IT": 0.335,
+    "KY": 0.294,
+    "LI": 0.218,
+    "BE": 0.238,
+    "GB": 0.388,
+    "CH": 0.251,
+    "DK": 0.258,
+    "BS": 0.317,
+    "CZ": 0.19,
+    "AT": 0.266,
+    "CY": 0.258,
+    "CV": 0.181,
+    "BB": 0.29,
+    "GT": 0.169,
+    "EE": 0.145,
+    "NL": 0.206,
+    "JM": 0.185,
+    "LV": 0.141,
+    "LT": 0.186,
+    "AU": 0.225,
+    "LU": 0.206,
+    "UY": 0.112,
+    "SV": 0.206,
+    "GR": 0.249,
+    "HN": 0.209,
+    "PT": 0.147,
+    "SG": 0.192,
+    "SE": 0.221,
+    "PL": 0.237,
+    "JP": 0.163,
+    "SL": 0.294,
+    "KE": 0.15,
+    "ML": 0.144,
+    "BZ": 0.15,
+    "AW": 0.261,
+    "CL": 0.163,
+    "SK": 0.162,
+    "BF": 0.198,
+    "NZ": 0.166,
+    "GA": 0.151,
+    "PH": 0.13,
+    "CO": 0.197,
+    "RW": 0.057,
+    "AD": 0.0,
+    "TG": 0.162,
+    "ZA": 0.088,
+    "PE": 0.153,
+    "RO": 0.203,
+    "HK": 0.15,
+    "SN": 0.165,
+    "FI": 0.095,
+    "US": 0.128,
+    "IL": 0.095,
+    "NI": 0.181,
+    "PA": 0.168,
+    "IS": 0.084,
+    "HR": 0.138,
+    "UG": 0.105,
+    "MD": 0.178,
+    "CR": 0.212,
+    "BR": 0.105,
+    "NO": 0.08,
+    "KH": 0.131,
+    "BG": 0.132,
+    "MT": 0.147,
+    "NA": 0.128,
+    "MU": 0.12,
+    "GH": 0.13,
+    "CI": 0.214,
+    "MG": 0.19,
+    "TH": 0.113,
+    "MZ": 0.069,
+    "RS": 0.132,
+    "MK": 0.258,
+    "KR": 0.114,
+    "SZ": 0.083,
+    "CA": 0.088,
+    "LK": 0.046,
+    "MA": 0.099,
+    "AL": 0.13,
+    "Dom. Rep.": 0.136,
+    "AM": 0.095,
+    "HU": 0.235,
+    "MX": 0.182,
+    "MV": 0.095,
+    "LS": 0.02,
+    "Bosnia & Herz.": 0.106,
+    "TW": 0.188,
+    "EC": 0.082,
+    "BW": 0.096,
+    "ID": 0.058,
+    "TZ": 0.083,
+    "JO": 0.145,
+    "MW": 0.145,
+    "BY": 0.085,
+    "CM": 0.16,
+    "UA": 0.151,
+    "UAE": 0.095,
+    "VN": 0.065,
+    "IN": 0.104,
+    "AR": 0.077,
+    "CN": 0.095,
+    "VE": 0.0,
+    "GE": 0.086,
+    "TN": 0.103,
+    "Turkey": 0.089,
+    "RU": 0.09,
+    "PK": 0.128,
+    "CD": 0.065,
+    "BD": 0.088,
+    "Trinidad & Tobago": 0.046,
+    "KZ": 0.06,
+    "PY": 0.04,
+    "SA": 0.059,
+    "AF": 0.084,
+    "MY": 0.116,
+    "BH": 0.066,
+    "SR": 0.051,
+    "AZ": 0.053,
+    "NP": 0.056,
+    "DZ": 0.031,
+    "KW": 0.07,
+    "NG": 0.04,
+    "UZ": 0.065,
+    "QA": 0.031,
+    "OM": 0.134,
+    "LA": 0.023,
+    "MM": 0.124,
+    "EG": 0.035,
+    "ZM": 0.033,
+    "CU": 0.005,
+    "AO": 0.009,
+    "BT": 0.015,
+    "IQ": 0.04,
+    "SY": 0.046,
+    "KG": 0.035,
+    "SD": 0.025,
+    "ET": 0.01,
+    "IR": 0.003
+  },
+  "USD_TO_EUR_used": 0.86
+}
