@@ -1,10 +1,10 @@
-# OptLCFdesigns
+# Opt_Ammonia
 
-Integrated, open-source techno-economic and environmental optimization framework to evaluate low-carbon fuels and other energy systems, here applied to **decentralized electric ammonia production**.
+Integrated, open-source techno-economic and environmental optimization framework to evaluate low-carbon fuels and other energy systems, here applied to **decentralized ammonia production**.
 
 This repository is used for the manuscript:
 
-> *Electric low-carbon ammonia production: a global techno-economic and environmental assessment*
+> *Haber–Bosch 2.0 for low-carbon ammonia production: A global techno-economic and environmental assessment*
 
 It provides the full modelling workflow used to evaluate more than 13,000 decentralized ammonia production configurations worldwide under grid-connected, hybrid, and off-grid system designs.
 
@@ -12,7 +12,7 @@ It provides the full modelling workflow used to evaluate more than 13,000 decent
 
 ## Overview
 
-This framework integrates energy system modelling, techno-economic assessment, and life cycle assessment (LCA) to evaluate where, how, and under which conditions decentralized electric ammonia production can contribute to a low-carbon global energy system.
+This framework integrates energy system modelling, techno-economic assessment, and life cycle assessment (LCA) to evaluate where, how, and under which conditions decentralized ammonia production can contribute to a low-carbon global energy system.
 
 The framework combines:
 
@@ -91,7 +91,7 @@ The model provides geospatially-explicit:
 ## Citation
 
 If you use this framework, please cite:
-> Terlouw, T., Bauer, C., Burgherr, P., McKenna, R., Rosa, L. (2026). *Electric low-carbon ammonia production: a global techno-economic and environmental assessment.*
+> Terlouw, T., Bauer, C., Burgherr, P., McKenna, R., Rosa, L. (2026). Energy & Environmental Science. *Haber–Bosch 2.0 for low-carbon ammonia production: A global techno-economic and environmental assessment.*
 
 ------------------------------------------------------------------------
 
