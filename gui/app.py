@@ -374,7 +374,7 @@ def pick_result(frame,identity,label='Gespeicherten Ergebnisfall wählen'):
     previous=st.session_state.get(widget_key)
     if previous not in records:
         match=next((key for key,row in records.items() if any(str(copy.get('__result_directory'))==previous for copy in saved_copies(row))),None)
-        if match is None:st.session_state.pop(widget_key,None)
+        if match is None:st.session_state[widget_key]=next(iter(records))
         else:st.session_state[widget_key]=match
     selected=st.selectbox(label,list(records),format_func=display,key=widget_key)
     row=records[selected]
