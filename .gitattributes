@@ -3,4 +3,4 @@
 *.py -text whitespace=cr-at-eol
 input_data/** -text whitespace=cr-at-eol
 tests/fixtures/** -text whitespace=cr-at-eol
-gui/data_snapshot/*.zip -text
+gui/** -text whitespace=cr-at-eol
