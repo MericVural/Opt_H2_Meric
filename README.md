@@ -204,4 +204,3 @@ Die GUI-Umgebung liegt ebenfalls hier unter `.venv-gui`; der Chat-Arbeitsordner
 ist für den normalen Start nicht erforderlich.
 [Vollständige Bedienanleitung](GUI_BEDIENUNGSANLEITUNG.md),
 [PDF](GUI_BEDIENUNGSANLEITUNG.pdf), [Ordnerstruktur](ORDNERSTRUKTUR.md).
-
