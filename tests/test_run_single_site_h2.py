@@ -68,7 +68,7 @@ def test_python_function_writes_complete_reproducible_result(tmp_path: Path) -> 
     )
     assert len(hourly_operation) == 24
     assert len(validated_input) == 24
-    assert metadata["schema_version"] == "1.3"
+    assert metadata["schema_version"] == "1.7"
     assert metadata["input"]["sha256"] == expected_hash
     assert metadata["input"]["time_zone"] == "UTC"
     assert metadata["result"]["optimality_gap_fraction"] == pytest.approx(0.0)

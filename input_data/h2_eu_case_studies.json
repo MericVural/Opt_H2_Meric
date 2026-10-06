@@ -1,0 +1,672 @@
+{
+  "schema_version": 1,
+  "decision_date": "2026-10-02",
+  "step": 25,
+  "status": "historical_2024_step25_scientific_manuscript_draft_completed",
+  "consumed_by_current_model": true,
+  "purpose": "Historical 2024 EU comparison with 8784 real local-year hours, explicit annualization and static 2024 operational references",
+  "sites": [
+    {
+      "site_id": "hamburg_moorburg",
+      "label": "Hamburg–Moorburg",
+      "coordinate": {
+        "crs": "EPSG:4326",
+        "latitude": 53.488,
+        "longitude": 9.949,
+        "provenance": "Representative analyst-selected point on former Moorburg power plant land; not an official surveyed electrolyzer pad",
+        "source_ids": [
+          "moorburg_project"
+        ]
+      },
+      "country_code": "DE",
+      "bidding_zone": "DE_LU",
+      "calendar_timezone": "Europe/Berlin",
+      "generation_mix_scope": "National domestic net-generation reference including all producer groups; DE",
+      "weather_grid_observed_in_sample": {
+        "latitude": 53.5,
+        "longitude": 10.0,
+        "api_elevation_m": 10.0,
+        "source": "processed ERA5 via Open-Meteo",
+        "not_plant_coordinate": true
+      },
+      "real_wacc_fraction_per_year": {
+        "pv": 0.013,
+        "wind_onshore": 0.013,
+        "electrolyzer": 0.033,
+        "compressor": 0.033,
+        "h2_storage": 0.033
+      },
+      "regulatory_uncovered_electricity_factor_kg_co2e_per_mwh": 357.48,
+      "operational_reference_scope": "Hamburg-Moorburg; national DE reference",
+      "operational_static_factor_kg_co2e_per_mwh": 304.65034889546985
+    },
+    {
+      "site_id": "huelva_la_rabida",
+      "label": "Huelva–La Rábida / Palos de la Frontera",
+      "coordinate": {
+        "crs": "EPSG:4326",
+        "latitude": 37.184329,
+        "longitude": -6.894507,
+        "provenance": "Official PRTR reference coordinate of existing La Rabida refinery complex PRTR1482; not a surveyed future electrolyzer pad",
+        "source_ids": [
+          "huelva_coordinate",
+          "huelva_hydrogen_project"
+        ]
+      },
+      "country_code": "ES",
+      "bidding_zone": "ES",
+      "calendar_timezone": "Europe/Madrid",
+      "generation_mix_scope": "National domestic net-generation reference including all producer groups; ES including islands, applied as proxy to mainland Huelva",
+      "weather_grid_observed_in_sample": {
+        "latitude": 37.25,
+        "longitude": -7.0,
+        "api_elevation_m": 17.0,
+        "source": "processed ERA5 via Open-Meteo",
+        "not_plant_coordinate": true
+      },
+      "real_wacc_fraction_per_year": {
+        "pv": 0.036,
+        "wind_onshore": 0.031,
+        "electrolyzer": 0.0535,
+        "compressor": 0.0535,
+        "h2_storage": 0.0535
+      },
+      "regulatory_uncovered_electricity_factor_kg_co2e_per_mwh": 194.76,
+      "operational_reference_scope": "Huelva-La Rabida / Spanish mainland; national ES including islands reference",
+      "operational_static_factor_kg_co2e_per_mwh": 128.81023975654873
+    }
+  ],
+  "time": {
+    "historical_year": 2024,
+    "year_basis": "local calendar year at each site",
+    "resolution_hours": 1,
+    "storage_timezone": "UTC",
+    "interval_semantics": "start, [t,t+1h)",
+    "start_utc_inclusive": "2023-12-31T23:00:00Z",
+    "end_utc_exclusive": "2024-12-31T23:00:00Z",
+    "expected_hours": 8784,
+    "monthly_grouping": "site local timezone",
+    "demand_profile_grouping": "site local timezone",
+    "dst": "Preserve distinct UTC hours; local spring day23h and autumn day25h",
+    "leap_years": "All real local-year hours retained; historical calendar annualization uses actual calendar hours, 8784 in 2024",
+    "reject_positional_year_remapping": true,
+    "foresight": "Perfect knowledge of historical full-year exogenous inputs; no operational market forecast",
+    "S2_interpretation": "Policy what-if with historical 2024 data; not a 2030 forecast or retrospective certification",
+    "source_weather_year": 2024,
+    "source_market_year": 2024,
+    "dst_start_local_date": "2024-03-31",
+    "dst_end_local_date": "2024-10-27",
+    "annualization_basis": "historical_calendar_year",
+    "annual_hours": 8784
+  },
+  "weather": {
+    "provider": "Open-Meteo Historical Weather API",
+    "underlying_dataset": "ECMWF ERA5",
+    "processed_not_raw_ERA5": true,
+    "query_options": {
+      "models": "era5",
+      "cell_selection": "land",
+      "wind_speed_unit": "ms",
+      "timezone": "UTC"
+    },
+    "elevation_policy": "Provider DEM elevation correction retained; record actual API elevation and grid per retrieval",
+    "field_mapping": {
+      "temperature_2m": {
+        "target": "temp_air",
+        "unit": "degC",
+        "scale": 1
+      },
+      "surface_pressure": {
+        "target": "pressure",
+        "unit": "Pa",
+        "scale": 100
+      },
+      "wind_speed_10m": {
+        "target": "wind_speed",
+        "unit": "m/s",
+        "scale": 1
+      },
+      "shortwave_radiation": {
+        "target": "ghi",
+        "unit": "W/m2",
+        "scale": 1
+      },
+      "direct_normal_irradiance": {
+        "target": "dni",
+        "unit": "W/m2",
+        "scale": 1
+      },
+      "diffuse_radiation": {
+        "target": "dhi",
+        "unit": "W/m2",
+        "scale": 1
+      }
+    },
+    "radiation_time_semantics": "Value at source t is previous-hour mean [t-1h,t); assign source(t+1h) to model interval starting t",
+    "instantaneous_field_policy": "Temperature, wind, pressure: interpolate source observations at interval boundaries to interval midpoint in Step19; no blanket1h shift",
+    "pv_solar_geometry_policy": "Use midpoint t+30min for interval [t,t+1h); preserve interval-start timestamps in final CSV",
+    "wind_policy": "Retain existing onshore V90/2000 package,80m hub and documented10m wind extrapolation; no offshore inference",
+    "solar_crosscheck_optional": "PVGIS5.3 historical, not its TMY; not an interchangeable six-field source without pressure/DNI verification",
+    "source_ids": [
+      "weather_api",
+      "weather_underlying"
+    ],
+    "full_year_coverage_verified": true
+  },
+  "electricity_cost": {
+    "unit": "real EUR2023/MWh",
+    "price_basis": "Hourly historical 2024 day-ahead wholesale price",
+    "DE_indicator": "SMARD4169 regionDE zoneDE_LU",
+    "ES_indicator": "REData600 spot; PVPC1001 excluded",
+    "grid_tariff_adder_eur_per_mwh_baseline": 0.0,
+    "excluded": [
+      "grid tariffs",
+      "electricity taxes and levies",
+      "procurement margins",
+      "fixed power charges"
+    ],
+    "interpretation": "Comparative wholesale-cost LCOH case, not actual delivered site tariff; zero adders are a system boundary assumption, not proof of exemption",
+    "negative_prices": "retain",
+    "price_sensitivity_eur_per_mwh_offset": [
+      -20,
+      20
+    ],
+    "ES_adjustment_note": "The earlier2023 consumer gas-cap discussion is historical; no unverified2024 adjustment is inserted.",
+    "source_ids": [
+      "DE_price",
+      "ES_price",
+      "ES_market_scope"
+    ],
+    "source_price_year": 2024,
+    "target_real_price_year": 2023,
+    "hourly_aggregation": "Duration-weighted mean of complete native source intervals; negative prices retained",
+    "price_deflator": {
+      "status": "VERIFIED_USER_APPROVED",
+      "provider": "Eurostat",
+      "dataset": "prc_hicp_ainr",
+      "unit": "INX_A_AVG",
+      "coicop18": "TOTAL",
+      "geographies": [
+        "DE",
+        "ES"
+      ],
+      "formula": "price_EUR2023 = nominal_price_EUR2024 * HICP(country,2023) / HICP(country,2024)",
+      "user_decision_date": "2026-10-03",
+      "national_values": {
+        "DE": {
+          "index_2023": 95.41,
+          "index_2024": 97.79,
+          "multiplier_nominal_2024_to_real_2023": 0.975662133142448,
+          "source_price_year": 2024,
+          "price_year": 2023,
+          "source_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_ainr?freq=A&unit=INX_A_AVG&coicop18=TOTAL&geo=DE&geo=ES&sinceTimePeriod=2023&untilTimePeriod=2024",
+          "source_sha256": "d24eeb56f537877d8e7a71acc21636dbb27b29fa53eca5f3fb993cbc611b6a23",
+          "source_updated": "2026-09-17T11:00:00+0200",
+          "dataset": "prc_hicp_ainr",
+          "unit": "INX_A_AVG",
+          "coicop18": "TOTAL",
+          "unit_label": "Annual average index",
+          "interpretation": "National all-items consumer-price annual mean; no claim of a wholesale-electricity price forecast"
+        },
+        "ES": {
+          "index_2023": 94.66,
+          "index_2024": 97.38,
+          "multiplier_nominal_2024_to_real_2023": 0.9720681864859314,
+          "source_price_year": 2024,
+          "price_year": 2023,
+          "source_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_ainr?freq=A&unit=INX_A_AVG&coicop18=TOTAL&geo=DE&geo=ES&sinceTimePeriod=2023&untilTimePeriod=2024",
+          "source_sha256": "d24eeb56f537877d8e7a71acc21636dbb27b29fa53eca5f3fb993cbc611b6a23",
+          "source_updated": "2026-09-17T11:00:00+0200",
+          "dataset": "prc_hicp_ainr",
+          "unit": "INX_A_AVG",
+          "coicop18": "TOTAL",
+          "unit_label": "Annual average index",
+          "interpretation": "National all-items consumer-price annual mean; no claim of a wholesale-electricity price forecast"
+        }
+      },
+      "reference_price_year": 2023,
+      "source_price_year": 2024
+    }
+  },
+  "operational_grid_emissions": {
+    "unit": "kgCO2e/MWh_net",
+    "quantity": "Static annual national net-generation reference proxy",
+    "method": "static_annual_national_net_generation_proxy",
+    "formula": "EEA national gross-generation intensity * Eurostat GEP_TOTAL / NEP_TOTAL, all MAP/AP electricity-only and CHP producers, all energy sources",
+    "reference_year": 2024,
+    "application_year": 2024,
+    "source_catalog": "input_data/h2_eu_static_factors.json",
+    "ready_for_model": true,
+    "DE_factor_kg_co2e_per_mwh": 304.65034889546985,
+    "ES_factor_kg_co2e_per_mwh": 128.81023975654873,
+    "inventory_convention": "Adopt EEA published CO2e electricity-production inventory with EEA heat allocation and autoproducer estimation. EEA uses zero for nuclear and renewables including biomass; no standalone biomass CH4/N2O correction is added. Not the former JRC technology-factor method.",
+    "data_vintage_alignment": "not_verified",
+    "uncertainties": [
+      "EEA 2024 early estimate, rounded integer source values; no numerical uncertainty supplied",
+      "EEA and Eurostat data revision alignment not verified; own gross/net conversion is an approximate production-denominator proxy",
+      "Spanish national reference including islands transferred to Huelva/mainland; no site-specific grid measurement",
+      "Generation reference applied to physical model grid imports; imports/exports attribution, grid losses, upstream and plant construction excluded",
+      "EEA nuclear/renewables zero and CHP allocation are adopted inventory conventions, not proof of physical zero, biomass sustainability or complete lifecycle emissions",
+      "Static annual2024 factor has no hourly intensity information; no chronological emission benefit can be inferred"
+    ],
+    "uncertainty_quantified": false,
+    "hourly_dynamic_factor_release": false,
+    "not_a_consumption_or_marginal_factor": true,
+    "effect_on_dispatch": "Operational reporting only; baseline has no operational CO2 price or cap",
+    "temporal_year_transfer_proxy": false
+  },
+  "regulatory_grid_emissions": {
+    "separate_from_operational_series": true,
+    "annual_country_default_source": "2023/1185 AnnexC TableA electricity2020",
+    "factor_reference_year": 2020,
+    "DE_gco2e_per_MJ_electricity": 99.3,
+    "ES_gco2e_per_MJ_electricity": 54.1,
+    "conversion_g_per_MJ_to_kg_per_MWh": 3.6,
+    "purpose": "Diagnostic for uncovered electricity; not measured historical2024 operational intensity or a complete product lifecycle inventory",
+    "qualified_renewable_electricity_factor": 0.0,
+    "threshold_kg_co2e_per_kg_h2": 3.384,
+    "external_assumptions": [
+      "additionality evidence",
+      "geographical correlation",
+      "exclusive renewable allocation"
+    ],
+    "low_price_exception": "disabled",
+    "certification_claim": false,
+    "source_ids": [
+      "regulatory_emissions",
+      "regulatory_correlation"
+    ],
+    "implementation_status": "Separate factors, local-month grouping and full D0/D1/D2 annual results accepted; Step24 electrical partial scope retained",
+    "input_column": "regulatory_grid_emission_factor",
+    "updating_caveat": "Annex C preceding Table A requires national table values until newer data for the prescribed intensity method are available; regulatory applicability/update remains to be checked before certification. EEA direct generation factors are not an automatic method-equivalent replacement."
+  },
+  "financing": {
+    "rate_type": "real after-tax annual discount-rate proxy",
+    "reference_year": 2021,
+    "appendix_publication_year": 2023,
+    "rates_vary_hourly": false,
+    "cost_price_year": 2023,
+    "no_inflation_conversion": true,
+    "H2_rule": "(country_PV_real_WACC+country_onshore_wind_real_WACC)/2+0.02",
+    "H2_premium_fraction": 0.02,
+    "mean_convention": "Unweighted and fixed before optimization",
+    "H2_components": [
+      "electrolyzer",
+      "compressor",
+      "h2_storage"
+    ],
+    "sensitivity_uniform_shift_fraction": [
+      -0.01,
+      0.01
+    ],
+    "tax_scope": "Real after-tax WACC is adopted as an effective discount / capital-recovery proxy for every component. Corporate income tax, depreciation tax shields, VAT and levered cash flows are not modelled. Therefore the result is a technical-economic annualized LCOH, not a tax-consistent investor cash-flow valuation or quoted financing offer. No second tax shield or blanket WACC/(1-tax) gross-up is applied.",
+    "interpretation": "Historical2021 national real after-tax technology benchmarks transferred to2024; not observed2024 local project finance. New2024 alternatives reviewed but not adopted where real/nominal definition or exact values remain unverified. Brandt H2premium is a documented assumption.",
+    "source_ids": [
+      "WACC",
+      "hydrogen_risk_premium"
+    ],
+    "existing_defaults_active_until_step20": false,
+    "temporal_financing_proxy": true,
+    "application_year": 2024
+  },
+  "hydrogen_demand": {
+    "annual_kg": 3650000,
+    "unit": "kg/h",
+    "scope": "Same synthetic prescribed delivery at both sites; not observed port demand",
+    "normalization": "annual_kg*weight_t/sum(weight)",
+    "holidays": "not separately modelled",
+    "profiles": {
+      "D0": {
+        "weight": "1 every hour"
+      },
+      "D1": {
+        "weight": "1 if08<=local_hour<20 every day else0"
+      },
+      "D2": {
+        "weight": "1 ifMonday-Friday and08<=local_hour<20 else0"
+      }
+    },
+    "not_optimized_or_shiftable": true,
+    "calendar_2024_active_hours": {
+      "D0": 8784,
+      "D1": 4392,
+      "D2": 3144
+    },
+    "annual_volume_preserved_on_year_change": true
+  },
+  "technology": {
+    "base": "Existing Brandt2024 EUR2023 component package",
+    "electrolyzer": "PEM",
+    "wind": "onshore",
+    "delivery_pressure_bar": 300,
+    "water_price_eur_per_m3": 3.74,
+    "water_scope": "Shared literature assumption, not actual local tariff; retain until evidenced change",
+    "transport_between_sites": false
+  },
+  "experiments": {
+    "scenarios": [
+      "S0",
+      "S1",
+      "S2"
+    ],
+    "base_runs": 6,
+    "additional_demand_runs": 12,
+    "additional_economic_runs": 48,
+    "total_planned_runs": 66,
+    "one_factor_at_a_time": true,
+    "economic_factors": {
+      "price_offset_eur_per_mwh": [
+        -20,
+        20
+      ],
+      "real_wacc_shift_fraction": [
+        -0.01,
+        0.01
+      ],
+      "electrolyzer_capex_multiplier": [
+        0.75,
+        1.25
+      ],
+      "electrolyzer_specific_energy_multiplier": [
+        0.9,
+        1.1
+      ]
+    },
+    "uncertainty_not_forecast_or_confidence_interval": true,
+    "scope_role": "Historical Step24 experiment matrix retained; active common OAT matrix is recorded in common_case_sensitivity_progress"
+  },
+  "step19_release_gates": [
+    "Exact8784 real local historical2024 UTC intervals including Feb29",
+    "Original2024 weather and price sources hashed; no positional year relabelling",
+    "National HICP overall annualmean2023/2024; negative prices retained",
+    "Static operational factor reference and application year both2024",
+    "Explicit historical calendar annualization1 for full2024 and fixed annual H2volume3650000kg",
+    "Separate regulatory source contract and independent result validation"
+  ],
+  "sources": {
+    "moorburg_project": "https://hghh.eu/en",
+    "huelva_coordinate": "https://prtr-es.miteco.gob.es/Informes/fichacomplejo.aspx?Id_Complejo=1316",
+    "huelva_hydrogen_project": "https://www.juntadeandalucia.es/boja/2025/131/BOJA25-131-00001-8974-01_00322573.pdf",
+    "weather_api": "https://open-meteo.com/en/docs/historical-weather-api",
+    "weather_underlying": "https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-timeseries?tab=download",
+    "DE_price": "https://www.smard.de/app/chart_data/4169/DE/index_hour.json",
+    "ES_price": "https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real?start_date=2024-01-01T00:00&end_date=2024-01-01T23:59&time_trunc=hour",
+    "DE_generation": "https://www.smard.de/en/downloadcenter/download-market-data/",
+    "ES_market_scope": "https://www.sistemaelectrico-ree.es/en/2023/spanish-electricity-system/markets/average-final-price",
+    "WACC": "https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2023/May/IRENA_Cost_of_financing_renewable_power_Appendix_2023.pdf",
+    "hydrogen_risk_premium": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41560-024-01511-z/MediaObjects/41560_2024_1511_MOESM1_ESM.pdf",
+    "regulatory_emissions": "https://eur-lex.europa.eu/eli/reg_del/2023/1185/oj/eng",
+    "regulatory_correlation": "https://eur-lex.europa.eu/eli/reg_del/2023/1184/2024-06-10/eng",
+    "fuel_factor_candidate": "https://data.europa.eu/doi/10.2760/014585",
+    "annual_energy_balances": "https://ec.europa.eu/eurostat/databrowser/view/nrg_bal_c/default/table?lang=en",
+    "CHP_allocation_reference": "https://eur-lex.europa.eu/eli/reg_del/2015/2402/oj/eng",
+    "factor_method_reference": "https://www.ffe.de/wp-content/uploads/2025/02/GGC_Methodology-report_en.pdf",
+    "national_price_deflator": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_ainr?freq=A&unit=INX_A_AVG&coicop18=TOTAL&geo=DE&geo=ES&sinceTimePeriod=2023&untilTimePeriod=2024",
+    "static_operational_EEA": "https://www.eea.europa.eu/en/analysis/indicators/greenhouse-gas-emission-intensity-of-1/greenhouse-gas-emission-intensity-of-electricity-generation/@@download/file",
+    "static_operational_methodology_EEA": "https://www.eea.europa.eu/en/analysis/indicators/greenhouse-gas-emission-intensity-of-1",
+    "static_gross_net_Eurostat": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_ind_peh?lang=en&geo=DE&geo=ES&time=2024"
+  },
+  "evidence_directory": "outputs_h2/eu_case_studies/design_checks/step18",
+  "verification": {
+    "date": "2026-10-02",
+    "checks_passed": 38,
+    "checks_total": 38,
+    "scope": "Design, source-sample, calendar and existing-interface checks; not full-year model validation; historical 2023 evidence retained unchanged, not a 2025 verification",
+    "historical_year": 2023
+  },
+  "design_revision_date": "2026-10-04",
+  "historical_design": {
+    "year": 2023,
+    "sha256": "275b4a8665e9a9c5b0d5df2910aa530fe3f7c09b1c340c0cb4674d048e021e8d",
+    "evidence_directory": "outputs_h2/eu_case_studies/design_checks/step18",
+    "checks_not_relabelled": true
+  },
+  "step19_progress": {
+    "historical_year": 2024,
+    "expected_hours_per_site": 8784,
+    "full_input_released": true,
+    "hourly_dynamic_operational_factors_released": false,
+    "operational_static_reference_factors_released": true,
+    "next_task": "Step25 research discussion, literature comparison and manuscript",
+    "cost_inputs_released": true,
+    "regulatory_inputs_released": true,
+    "input_profiles": [
+      "D0",
+      "D1",
+      "D2"
+    ],
+    "released_input_count": 6,
+    "annual_solver_runs_performed": true,
+    "full_year_annualization_factor": 1.0,
+    "source_acquisition_report": "outputs_h2/eu_case_studies/historical_2024/step19/raw/acquisition_prices_weather.json",
+    "preparation_report": "outputs_h2/eu_case_studies/historical_2024/step19/prepared/preparation_report.json",
+    "static_release_report": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/released_inputs/static_factor_release_report.json",
+    "full_year_input_preflight": "outputs_h2/eu_case_studies/historical_2024/step19/validation/full_year_input_preflight.json",
+    "final_validation": {
+      "client_completion_date": "2026-10-04",
+      "passed_tests": 583,
+      "passed_subtests": 6,
+      "full_year_inputs_verified": 6,
+      "test_report": "outputs_h2/eu_case_studies/historical_2024/step19/validation/pytest_full_suite_summary.json",
+      "annual_eu_solver_cases_performed": false,
+      "scope": "Historical software/input validation at completion of Steps19-22; later actual annual results documented in step23_progress"
+    }
+  },
+  "year_migration_20261003": {
+    "authorized_by": "Researcher explicit request: switch to2024 and stay as consistent as possible",
+    "previous_historical_year": 2025,
+    "historical_year": 2024,
+    "previous_design_sha256": "18a053a6e457e0dec0aa94148db28e5a442756ec01447181b537f53f81d813e0",
+    "previous_design_snapshot": "outputs_h2/eu_case_studies/historical_2024/step19/year_migration_20261003/historical_2025_design_snapshot.json",
+    "previous_evidence_unchanged": "outputs_h2/eu_case_studies/historical_2025/",
+    "fixed_annual_h2_kg": 3650000,
+    "cost_price_year": 2023,
+    "finance_reference_year_review": "Completed: exact comparable real after-tax2024 DE/ES PV/wind rates not released from examined primary sources; existing2021 benchmarks explicitly retained as temporal proxies. New2024 alternatives archived, not activated.",
+    "previous_static_catalog_snapshot": "outputs_h2/eu_case_studies/historical_2024/step19/year_migration_20261003/historical_2025_static_catalog_snapshot.json",
+    "previous_md_snapshots": "outputs_h2/eu_case_studies/historical_2024/step19/year_migration_20261003/previous_documentation"
+  },
+  "parameter_year_consistency": {
+    "historical_observation_year": 2024,
+    "weather_year": 2024,
+    "market_price_year": 2024,
+    "operational_factor_reference_year": 2024,
+    "operational_factor_application_year": 2024,
+    "cost_price_year": 2023,
+    "money_basis_is_not_observation_year": true,
+    "finance_reference_year": 2021,
+    "finance_application_year": 2024,
+    "finance_temporal_proxy": true,
+    "regulatory_factor_reference_year": 2020,
+    "regulatory_factor_is_legal_standard_not_observed2024_emissions": true,
+    "technology_package_publication_year": 2024,
+    "annual_demand_is_synthetic_prescribed": true,
+    "remaining_operational_proxy_dimensions": [
+      "nationalES→Huelva/mainland",
+      "own gross/net conversion with unverified source revision alignment",
+      "annual constant production reference applied to grid import without consumption flow tracing"
+    ],
+    "source_review_report": "outputs_h2/eu_case_studies/historical_2024/step19/parameter_consistency_review/PARAMETERKONSISTENZ_2024.md"
+  },
+  "step21_progress": {
+    "status": "implemented_inputs_verified",
+    "historical_year": 2024,
+    "profiles": [
+      "D0",
+      "D1",
+      "D2"
+    ],
+    "active_delivery_hours": {
+      "D0": 8784,
+      "D1": 4392,
+      "D2": 3144
+    },
+    "fixed_annual_h2_kg": 3650000,
+    "synthetic_not_observed_demand": true,
+    "full_year_solver_delivery_validation_pending": false,
+    "D0_full_year_solver_delivery_validated": true,
+    "pending_annual_solver_profiles": [],
+    "D1_D2_full_year_solver_delivery_validated": true
+  },
+  "optional_historical_2025_source_examples": {
+    "ES_generation": "https://demanda.ree.es/WSvisionaMovilesPeninsulaRest/resources/demandaGeneracionPeninsula?curva=DEMANDAAU&fecha=2025-01-01",
+    "ES_generation_crosscheck": "https://apidatos.ree.es/es/datos/generacion/estructura-generacion?start_date=2025-01-01T00:00&end_date=2025-01-01T23:59&time_trunc=day&geo_trunc=electric_system&geo_limit=peninsular&geo_ids=8741"
+  },
+  "step22_progress": {
+    "status": "implemented_full_model_suite_and_real_input_preflight_passed",
+    "monthly_correlation_basis": "site_local_timezone",
+    "hourly_correlation_basis": "physical_unique_utc_hours",
+    "default_legacy_timezone": "UTC",
+    "solvers_and_red_and_independent_validator_agree": true,
+    "actual_2024_input_months": 12,
+    "annual_eu_solver_cases_performed": true,
+    "next_task": "Step25 research discussion, literature comparison and manuscript"
+  },
+  "step23_progress": {
+    "status": "accepted_six_actual_D0_annual_cases",
+    "client_completion_date": "2026-10-04",
+    "historical_year": 2024,
+    "demand_profile": "D0",
+    "annual_cases_performed": 6,
+    "all_cases_optimal": true,
+    "hours_per_case": 8784,
+    "annualization_factor": 1.0,
+    "annual_h2_delivered_kg_per_case": 3650000,
+    "solver": "scipy_highs",
+    "independent_export_checks_passed": 224,
+    "independent_export_checks_total": 224,
+    "additional_scientific_audit_checks_passed": 275,
+    "additional_scientific_audit_checks_total": 275,
+    "run_contract": "outputs_h2/eu_case_studies/historical_2024/step23/base_cases_20261004/run_contract.json",
+    "immutable_run_design": "outputs_h2/eu_case_studies/historical_2024/step23/base_cases_20261004/evidence/h2_eu_case_studies_run_design.json",
+    "immutable_run_design_sha256": "33c5502965022aaa38f9f0be6a54f18bb8be16462d1e8a6daf90668d89223cb3",
+    "results_table": "outputs_h2/eu_case_studies/historical_2024/step23/base_cases_20261004/results/eu_D0_base_cases.csv",
+    "additional_scientific_audit": "outputs_h2/eu_case_studies/historical_2024/step23/base_cases_20261004/scientific_review/annual_base_case_scientific_audit.json",
+    "operational_and_regulatory_scopes_remain_separate": true,
+    "full_RFNBO_certification_claim": false,
+    "model_parameters_or_tolerances_changed": false,
+    "demand_sensitivity_annual_cases_performed": 0,
+    "economic_sensitivity_annual_cases_performed": 0,
+    "next_task": "Step25 research discussion, literature comparison and manuscript"
+  },
+  "step24_progress": {
+    "status": "accepted_sixty_new_annual_cases_and_six_original_baselines_reused",
+    "client_date": "2026-10-04",
+    "demand_sensitivity_annual_cases_performed": 12,
+    "economic_sensitivity_annual_cases_performed": 48,
+    "accepted_D0_original_results_reused": 6,
+    "new_baseline_solves": 0,
+    "total_unique_annual_result_cases": 66,
+    "all_results_accepted": true,
+    "historical_year": 2024,
+    "hours_per_case": 8784,
+    "annualization_factor": 1.0,
+    "annual_h2_delivered_kg_per_case": 3650000,
+    "immutable_run_design": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/evidence/h2_eu_case_studies_run_design.json",
+    "immutable_run_design_sha256": "33c5502965022aaa38f9f0be6a54f18bb8be16462d1e8a6daf90668d89223cb3",
+    "experiment_contract": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/experiment_contract.json",
+    "economic_code_contract": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/economic_code_contract.json",
+    "profile_code_snapshot": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/evidence/initial_code",
+    "economic_code_snapshot": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/evidence/economic_code",
+    "model_math_base_parameters_and_tolerances_unchanged": true,
+    "original_six_D0_outputs_unchanged": true,
+    "complete_separate_emission_factors": true,
+    "full_RFNBO_certification_claim": false,
+    "OAT_is_not_forecast_or_confidence_interval": true,
+    "software_validation": {
+      "passed_tests": 618,
+      "passed_subtests": 6,
+      "junit_entries": 624,
+      "report": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/validation/pytest_full_suite_summary.json"
+    },
+    "next_task": "Step25 research discussion, literature comparison and manuscript",
+    "independent_export_checks_passed": 2240,
+    "independent_export_checks_total": 2240,
+    "separate_scientific_audit_checks_passed": 4975,
+    "separate_scientific_audit_checks_total": 4975,
+    "results_table": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/results/all66_result_cases.csv",
+    "results_summary": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/results/step24_results_summary.json",
+    "scientific_audit": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/scientific_review/step24_scientific_audit.json",
+    "all_profile_and_economic_cases_cost_order_S0_le_S1_le_S2": true,
+    "huelva_lcoh_lower_all_matched_cases": true
+  },
+  "step25_progress": {
+    "status": "scientific_discussion_literature_comparison_and_manuscript_draft_completed",
+    "client_date": "2026-10-04",
+    "accepted_unique_annual_result_cases": 66,
+    "new_annual_optimization_runs": 0,
+    "model_parameters_and_original_results_unchanged": true,
+    "manuscript": "manuskript/FORSCHUNGSARBEIT_ENTWURF.md",
+    "evidence_archive": "outputs_h2/eu_case_studies/historical_2024/step25/discussion_20261004",
+    "result_claims": "outputs_h2/eu_case_studies/historical_2024/step25/discussion_20261004/result_analysis/step25_result_claims.json",
+    "literature_comparison": "outputs_h2/eu_case_studies/historical_2024/step25/discussion_20261004/literature/STEP25_LITERATURVERGLEICH.md",
+    "acceptance_report": "outputs_h2/eu_case_studies/historical_2024/step25/discussion_20261004/acceptance_report.json",
+    "historical_Namibia_kept_separate": true,
+    "full_RFNBO_certification_claim": false,
+    "submission_or_supervisor_approval_claim": false,
+    "pdf_updated": false,
+    "next_task": "Supervisor review and formal manuscript adaptation; further model experiments require a justified research question"
+  },
+  "latest_fresh_model_run": {
+    "client_date": "2026-10-04",
+    "status": "six_fresh_D0_annual_cases_optimal_and_validated",
+    "run_root": "outputs_h2/eu_case_studies/historical_2024/verification_runs/basis_20261004_121938UTC",
+    "new_annual_solver_executions": 6,
+    "additional_unique_scenario_combinations": 0,
+    "scientific_result_cases_remain": 66,
+    "historical_year": 2024,
+    "hours_per_case": 8784,
+    "profile": "D0",
+    "passed_export_checks": 224,
+    "total_export_checks": 224,
+    "independent_review": "outputs_h2/eu_case_studies/historical_2024/verification_runs/basis_20261004_121938UTC/independent_review/fresh_run_review.json",
+    "model_parameters_unchanged": true,
+    "pdf_updated": false
+  },
+  "common_case_sensitivity_progress": {
+    "status": "scientifically_accepted_common_Namibia_EU_diagnostics",
+    "client_date": "2026-10-04",
+    "common_case_rows": 144,
+    "EU_common_rows": 96,
+    "Namibia_common_rows": 48,
+    "new_annual_EU_cases": 66,
+    "reused_combinations": 78,
+    "unique_EU_result_union": 132,
+    "old_demand_and_absolute_price_WACC_variants_kept_as_additional": 36,
+    "common_price_offset_fraction_of_arithmetic_mean": [
+      -0.5,
+      0.5
+    ],
+    "real_component_wacc_multipliers": [
+      0.6363636363636364,
+      1.3636363636363635
+    ],
+    "PEM_CAPEX_multipliers": [
+      0.75,
+      1.25
+    ],
+    "PEM_energy_multipliers": [
+      0.9,
+      1.1
+    ],
+    "PV_CAPEX_multipliers": [
+      0.75,
+      1.25
+    ],
+    "wind_CAPEX_multipliers": [
+      0.25,
+      0.5,
+      1.5
+    ],
+    "H2_storage_CAPEX_multipliers": [
+      0.75,
+      1.25
+    ],
+    "results": "outputs_h2/cross_case_consistency/alignment_20261004/results/common_sensitivity_comparison.csv",
+    "experiment_contract": "outputs_h2/cross_case_consistency/alignment_20261004/experiment_contract.json",
+    "completion_receipt": "outputs_h2/cross_case_consistency/alignment_20261004/completion_receipt.json",
+    "figures": "outputs_h2/cross_case_consistency/alignment_20261004/figures/GRAFIKEN_UEBERSICHT.md",
+    "baseline_inputs_and_LP_unchanged": true,
+    "PDF_updated": false,
+    "same_experiments_do_not_isolate_country_causality": true
+  }
+}

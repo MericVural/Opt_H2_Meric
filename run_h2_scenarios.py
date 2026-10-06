@@ -25,12 +25,15 @@ import numpy as np
 import pandas as pd
 
 from config_h2 import DEFAULT_CONFIG, ModelConfig, Scenario, with_uniform_real_wacc
-from h2_input_data import HourlyInputError
+from eu_site_configuration import EU_SITE_IDS, load_eu_site_configuration
+from h2_input_data import COMPLETE_EMISSIONS_REPORTING, HourlyInputError, validate_hourly_input
 from opt_hydrogen_functions import HydrogenOptimizationError
 from run_single_site_h2 import (
     H2RunError,
     OUTPUT_FILENAMES,
     RunArtifacts,
+    _load_emission_factor_metadata,
+    _require_eu_input_context_matches,
     run_single_site_h2,
 )
 
@@ -78,6 +81,11 @@ def run_h2_scenarios(
     overwrite: bool = False,
     solver_output: bool = False,
     solver_backend: str = "auto",
+    emission_factor_metadata_path: str | Path | None = None,
+    require_separate_emission_factors: bool = False,
+    emissions_reporting: str = COMPLETE_EMISSIONS_REPORTING,
+    eu_site: str | None = None,
+    eu_design_path: str | Path | None = None,
 ) -> ScenarioBatchArtifacts:
     """Rechne alle ausgewählten Szenarien mit exakt derselben Eingabedatei."""
 
@@ -85,17 +93,41 @@ def run_h2_scenarios(
         ("include_off_grid", include_off_grid),
         ("overwrite", overwrite),
         ("solver_output", solver_output),
+        ("require_separate_emission_factors", require_separate_emission_factors),
     ):
         if not isinstance(value, bool):
             raise TypeError(f"{name} muss ein boolescher Wert sein.")
 
     source_path = Path(input_path).expanduser().resolve()
+    selected_eu_site = None
+    if eu_site is not None:
+        selected_eu_site = load_eu_site_configuration(eu_site, base_config=config, design_path=eu_design_path)
+        config = selected_eu_site.config
+    elif eu_design_path is not None:
+        raise H2RunError("eu_design_path benötigt eine explizite eu_site-Auswahl.")
     if not source_path.exists():
         raise FileNotFoundError(
             f"Die Eingabedatei wurde nicht gefunden: {source_path}"
         )
     if not source_path.is_file():
         raise H2RunError(f"Der Eingabepfad ist keine Datei: {source_path}")
+    input_sha256 = _sha256(source_path)
+    try:
+        raw_input = pd.read_csv(source_path)
+    except (pd.errors.ParserError, UnicodeDecodeError) as exc:
+        raise H2RunError(f"Die CSV-Eingabedatei konnte nicht gelesen werden: {source_path}") from exc
+    if emission_factor_metadata_path is not None:
+        _load_emission_factor_metadata(
+            raw_input, Path(emission_factor_metadata_path), input_sha256
+        )
+    if selected_eu_site is not None:
+        _require_eu_input_context_matches(raw_input, selected_eu_site.metadata)
+        raw_input.attrs["eu_site_configuration"] = selected_eu_site.metadata
+    raw_input.attrs["temporal_correlation_timezone"] = config.study.temporal_correlation_timezone
+    validated_input = validate_hourly_input(
+        raw_input, require_separate_emission_factors=require_separate_emission_factors,
+        emissions_reporting=emissions_reporting,
+    )
 
     output_root = Path(output_directory).expanduser().resolve()
     scenario_specs = list(CORE_SCENARIOS)
@@ -109,7 +141,6 @@ def run_h2_scenarios(
     )
     output_root.mkdir(parents=True, exist_ok=True)
 
-    input_sha256 = _sha256(source_path)
     scenario_runs: dict[str, RunArtifacts] = {}
     summary_rows: list[pd.DataFrame] = []
     for spec in scenario_specs:
@@ -121,6 +152,11 @@ def run_h2_scenarios(
             overwrite=overwrite,
             solver_output=solver_output,
             solver_backend=solver_backend,
+            emission_factor_metadata_path=emission_factor_metadata_path,
+            require_separate_emission_factors=require_separate_emission_factors,
+            emissions_reporting=emissions_reporting,
+            eu_site=eu_site,
+            eu_design_path=eu_design_path,
         )
         summary = pd.read_csv(artifacts.summary_path)
         if len(summary) != 1:
@@ -148,6 +184,7 @@ def run_h2_scenarios(
             solver_backend=solver_backend,
             scenario_specs=scenario_specs,
             scenario_runs=scenario_runs,
+            validated_input=validated_input,
         ),
         metadata_path,
     )
@@ -260,15 +297,36 @@ def _build_batch_metadata(
     solver_backend: str,
     scenario_specs: Sequence[ScenarioSpec],
     scenario_runs: dict[str, RunArtifacts],
+    validated_input: pd.DataFrame,
 ) -> dict[str, object]:
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.4",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "input": {
             "source_path": str(source_path),
             "sha256": input_sha256,
+            "emission_factor_mode": validated_input.attrs["emission_factor_mode"],
+            "emissions_reporting": validated_input.attrs["emissions_reporting"],
+            "operational_emissions_status": validated_input.attrs["operational_emissions_status"],
+            "emission_factor_sources": validated_input.attrs.get("emission_factor_sources", {}),
+            "emission_factor_metadata": validated_input.attrs.get("emission_factor_metadata"),
+            "eu_site_configuration": validated_input.attrs.get("eu_site_configuration"),
+            "declared_input_context": validated_input.attrs.get("declared_input_context", {}),
+            **validated_input.attrs.get("declared_input_context", {}),
         },
         "requested_solver_backend": solver_backend,
+        "annualization": {
+            "annual_hours": next(iter(scenario_runs.values())).result.annual_hours,
+            "modeled_hours": next(iter(scenario_runs.values())).result.modeled_hours,
+            "basis": next(iter(scenario_runs.values())).result.annualization_basis,
+        },
+        "temporal_calendar": {
+            "timezone": validated_input.attrs.get("temporal_correlation_timezone", "UTC"),
+            "monthly_grouping_basis": ("utc_calendar_month"
+                if validated_input.attrs.get("temporal_correlation_timezone", "UTC") == "UTC"
+                else "site_local_calendar_month"),
+            "hourly_grouping_basis": "physical_utc_hour",
+        },
         "scenarios": [
             {
                 "scenario_id": spec.scenario_id,
@@ -355,6 +413,24 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Solver für alle Szenarien; Standard: auto.",
     )
     parser.add_argument(
+        "--emission-factor-metadata",
+        type=Path,
+        help="Gemeinsamer JSON-Quellenvertrag für getrennte Faktoren, gebunden an den CSV-SHA256.",
+    )
+    parser.add_argument(
+        "--require-separate-emission-factors",
+        action="store_true",
+        help="Verlangt vor allen Szenarien getrennte operative/regulatorische Faktoren.",
+    )
+    parser.add_argument(
+        "--emissions-reporting",
+        choices=("complete", "regulatory-only"),
+        default="complete",
+        help="Explizite Wahl einer vollständigen oder ausschließlich regulatorischen THG-Auswertung ohne betriebliche Ersatzwerte.",
+    )
+    parser.add_argument("--eu-site", choices=EU_SITE_IDS, help="Aktiviert den dokumentierten EU-Standort-WACC für alle Szenarien identisch.")
+    parser.add_argument("--eu-design", type=Path, help="Optionaler expliziter EU-Entwurfs-JSON-Pfad für --eu-site.")
+    parser.add_argument(
         "--uniform-real-wacc",
         type=float,
         help=(
@@ -396,6 +472,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     args = parser.parse_args(arguments)
     run_config = DEFAULT_CONFIG
+    if args.eu_site is not None and args.uniform_real_wacc is not None:
+        parser.error("--eu-site und --uniform-real-wacc dürfen nicht gleichzeitig gewählt werden.")
     if args.uniform_real_wacc is not None:
         if not args.wacc_source:
             parser.error("--wacc-source ist zusammen mit --uniform-real-wacc erforderlich.")
@@ -417,6 +495,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             solver_output=args.solver_output,
             solver_backend=args.solver,
             config=run_config,
+            emission_factor_metadata_path=args.emission_factor_metadata,
+            require_separate_emission_factors=args.require_separate_emission_factors,
+            emissions_reporting=args.emissions_reporting.replace("-", "_"),
+            eu_site=args.eu_site,
+            eu_design_path=args.eu_design,
         )
     except (
         FileNotFoundError,

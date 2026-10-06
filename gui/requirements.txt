@@ -1,0 +1,2 @@
+# Install in a separate GUI environment. Native scientific packages stay unchanged.
+streamlit==1.65.0

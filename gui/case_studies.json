@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "studies": [
+    {
+      "study_id": "eu_2024",
+      "label": "EU-Vergleich 2024",
+      "role": "current",
+      "runner_kind": "eu",
+      "can_run": true,
+      "documentation": "fallstudien/FALLSTUDIE_HAMBURG_ANDALUSIEN.md",
+      "design": "input_data/h2_eu_case_studies.json",
+      "sites_from_design": true,
+      "profiles": [
+        "D0",
+        "D1",
+        "D2"
+      ],
+      "input_template": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/released_inputs/{site_id}_{profile}_static_factors.csv",
+      "input_metadata_template": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/released_inputs/{site_id}_{profile}_static_factors.metadata.json",
+      "results": [
+        {
+          "label": "Frische validierte D0-Jahresfälle",
+          "path": "outputs_h2/eu_case_studies/historical_2024/verification_runs/basis_20261004_121938UTC/runs/{site_id}/D0/scenario_comparison.csv",
+          "kind": "scenario_comparison",
+          "profile": "D0"
+        },
+        {
+          "label": "Validierte Nachfrageprofile",
+          "path": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/results/demand_profile_comparison.csv",
+          "kind": "accepted_table",
+          "exclude_profiles": [
+            "D0"
+          ]
+        }
+      ],
+      "sensitivities": [
+        {
+          "label": "Schritt 24: ursprüngliche OAT-Varianten",
+          "path": "outputs_h2/eu_case_studies/historical_2024/step24/sensitivities_20261004/runs/{site_id}/economic/sensitivity_comparison.csv",
+          "kind": "sensitivity_comparison"
+        },
+        {
+          "label": "Gemeinsames 3-Fallstudien-Versuchsdesign",
+          "path": "outputs_h2/cross_case_consistency/alignment_20261004/results/common_sensitivity_comparison.csv",
+          "kind": "accepted_table",
+          "optional": true
+        },
+        {
+          "label": "H₂-Jahresnachfrage: 50–150 % (2024)",
+          "path": "outputs_h2/eu_case_studies/historical_2024/demand_quantity_20261005/results/demand_quantity_comparison.csv",
+          "kind": "accepted_table"
+        }
+      ]
+    },
+    {
+      "study_id": "namibia",
+      "label": "Namibia",
+      "role": "historical",
+      "runner_kind": "legacy",
+      "can_run": true,
+      "require_archived_config_compatibility": true,
+      "run_limitation": "Historischer Entwicklungsfall; Neu-Ausführung nur bei bestandener aktueller Konfigurations-/Input-Kompatibilitätsprüfung und explizitem archiviertem WACC.",
+      "documentation": "fallstudien/FALLSTUDIE_NAMIBIA.md",
+      "sites": [
+        {
+          "site_id": "namibia",
+          "label": "Dokumentierter Namibia-Referenzstandort (1°-Zelle)",
+          "input": "outputs_h2/namibia_case_study/namibia_input_1deg.csv",
+          "input_metadata": "outputs_h2/namibia_case_study/namibia_input_1deg_metadata.json",
+          "baseline_metadata": "outputs_h2/namibia_case_study/scenarios_wacc11/S0_reference/run_metadata.json",
+          "profiles": [
+            "D0"
+          ]
+        }
+      ],
+      "results": [
+        {
+          "label": "Historische validierte Namibia-Szenarien",
+          "path": "outputs_h2/namibia_case_study/scenarios_wacc11/scenario_comparison.csv",
+          "kind": "scenario_comparison",
+          "profile": "D0"
+        }
+      ],
+      "sensitivities": [
+        {
+          "label": "Historische Namibia-OAT-Varianten",
+          "path": "outputs_h2/namibia_case_study/sensitivity_step14/sensitivity_comparison.csv",
+          "kind": "sensitivity_comparison"
+        },
+        {
+          "label": "Gemeinsames 3-Fallstudien-Versuchsdesign",
+          "path": "outputs_h2/cross_case_consistency/alignment_20261004/results/common_sensitivity_comparison.csv",
+          "kind": "accepted_table",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

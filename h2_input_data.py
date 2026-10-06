@@ -11,6 +11,8 @@ Beim Import werden keine Dateien geöffnet und keine Verzeichnisse angelegt.
 
 from __future__ import annotations
 
+from copy import deepcopy
+import json
 from types import MappingProxyType
 from typing import Final, Mapping
 
@@ -41,6 +43,12 @@ HOURLY_COLUMN_UNITS: Final[Mapping[str, str]] = MappingProxyType(
     }
 )
 EXPECTED_TIME_STEP: Final[pd.Timedelta] = pd.Timedelta(hours=1)
+REGULATORY_EMISSION_COLUMN: Final[str] = "regulatory_grid_emission_factor"
+LEGACY_EMISSION_MODE: Final[str] = "legacy_shared_factor"
+SEPARATE_EMISSION_MODE: Final[str] = "explicit_separate_factors"
+REGULATORY_ONLY_EMISSION_MODE: Final[str] = "regulatory_only"
+COMPLETE_EMISSIONS_REPORTING: Final[str] = "complete"
+EMISSION_FACTOR_UNIT: Final[str] = "kg_CO2e/MWh"
 
 
 class HourlyInputError(ValueError):
@@ -51,6 +59,8 @@ def validate_hourly_input(
     data: pd.DataFrame,
     *,
     expected_hours: int | None = None,
+    require_separate_emission_factors: bool = False,
+    emissions_reporting: str = COMPLETE_EMISSIONS_REPORTING,
 ) -> pd.DataFrame:
     """Prüfe und vereinheitliche einen stündlichen H2-Eingabedatensatz.
 
@@ -62,6 +72,21 @@ def validate_hourly_input(
     expected_hours:
         Optionale erwartete Zeilenzahl, beispielsweise 24 für einen Test oder
         8.760 für den vollständigen Basisfall.
+    require_separate_emission_factors:
+        Verlange zwei unabhängig dokumentierte Faktoren. ``grid_emission_factor``
+        bleibt der betriebliche Faktor. Die optionale Spalte
+        ``regulatory_grid_emission_factor`` aktiviert den getrennten Modus auch
+        ohne dieses Flag. Dann muss ``data.attrs['emission_factor_sources']``
+        die Einträge ``operational`` und ``regulatory`` enthalten, jeweils mit
+        ``source_description``, ``reference_year``, ``spatial_scope``, ``unit``
+        und ``emissions_basis``. Quellenwerte sind Beschreibungen, keine
+        automatische Bestätigung ihrer wissenschaftlichen Eignung.
+    emissions_reporting:
+        Standard ``complete`` benötigt weiterhin den betrieblichen Faktor.
+        Die explizite Wahl ``regulatory_only`` verlangt ausschließlich
+        ``regulatory_grid_emission_factor`` und dessen eigene Quelle;
+        ``grid_emission_factor`` und eine operative Quellenangabe müssen fehlen.
+        Betriebliche Emissionen bleiben nicht ausgewertet, ohne Ersatzwert.
 
     Returns
     -------
@@ -80,6 +105,15 @@ def validate_hourly_input(
 
     if not isinstance(data, pd.DataFrame):
         raise TypeError("data muss ein pandas.DataFrame sein.")
+    if not isinstance(require_separate_emission_factors, bool):
+        raise TypeError("require_separate_emission_factors muss ein boolescher Wert sein.")
+    if emissions_reporting not in (COMPLETE_EMISSIONS_REPORTING, REGULATORY_ONLY_EMISSION_MODE):
+        raise HourlyInputError("emissions_reporting muss complete oder regulatory_only sein.")
+    regulatory_only = emissions_reporting == REGULATORY_ONLY_EMISSION_MODE
+    if regulatory_only and require_separate_emission_factors:
+        raise HourlyInputError("regulatory_only widerspricht require_separate_emission_factors.")
+    if regulatory_only and "grid_emission_factor" in data.columns:
+        raise HourlyInputError("regulatory_only benötigt keine operative grid_emission_factor-Spalte; sie muss fehlen.")
     if data.empty:
         raise HourlyInputError("Der stündliche Eingabedatensatz ist leer.")
     if data.columns.duplicated().any():
@@ -88,9 +122,9 @@ def validate_hourly_input(
             f"Spaltennamen dürfen nicht doppelt vorkommen: {duplicate_columns}."
         )
 
-    missing_columns = [
-        column for column in REQUIRED_HOURLY_COLUMNS if column not in data.columns
-    ]
+    required_columns = (tuple(column for column in REQUIRED_HOURLY_COLUMNS if column != "grid_emission_factor")
+                        + (REGULATORY_EMISSION_COLUMN,)) if regulatory_only else REQUIRED_HOURLY_COLUMNS
+    missing_columns = [column for column in required_columns if column not in data.columns]
     if missing_columns:
         raise HourlyInputError(
             "Pflichtspalten fehlen: " + ", ".join(missing_columns) + "."
@@ -105,9 +139,34 @@ def validate_hourly_input(
     validated = data.copy(deep=True)
     validated[TIMESTAMP_COLUMN] = _parse_utc_timestamps(validated[TIMESTAMP_COLUMN])
     _validate_time_axis(validated[TIMESTAMP_COLUMN])
+    site_context = data.attrs.get("eu_site_configuration")
+    if site_context is not None:
+        if not isinstance(site_context, dict):
+            raise HourlyInputError("eu_site_configuration muss ein gültiger Standortvertrag sein.")
+        year, zone = site_context.get("historical_year"), site_context.get("calendar_timezone")
+        if type(year) is not int or not isinstance(zone, str):
+            raise HourlyInputError("EU-Kalender benötigt ein explizites Jahr und eine Ortszeitzone.")
+        try:
+            local = validated[TIMESTAMP_COLUMN].dt.tz_convert(zone)
+        except (ValueError, KeyError) as exc:
+            raise HourlyInputError("Ungültige EU-Ortszeitzone.") from exc
+        if set(local.dt.year) != {year}:
+            raise HourlyInputError("EU-Zeitstempel widersprechen dem gewählten historischen Kalenderjahr.")
+        contract = site_context.get("time_contract", {})
+        if len(validated) == contract.get("expected_hours"):
+            if (validated[TIMESTAMP_COLUMN].iloc[0] != pd.Timestamp(contract.get("start_utc_inclusive"))
+                    or validated[TIMESTAMP_COLUMN].iloc[-1] + EXPECTED_TIME_STEP != pd.Timestamp(contract.get("end_utc_exclusive"))):
+                raise HourlyInputError("EU-Volljahr benötigt die exakten lokalen Jahresgrenzen in UTC.")
 
     for column in NUMERIC_HOURLY_COLUMNS:
+        if regulatory_only and column == "grid_emission_factor":
+            continue
         validated[column] = _parse_finite_numeric_column(validated[column], column)
+    if REGULATORY_EMISSION_COLUMN in validated.columns:
+        validated[REGULATORY_EMISSION_COLUMN] = _parse_finite_numeric_column(
+            validated[REGULATORY_EMISSION_COLUMN], REGULATORY_EMISSION_COLUMN
+        )
+        _require_nonnegative(validated, REGULATORY_EMISSION_COLUMN)
 
     for column in ("pv_capacity_factor", "wind_capacity_factor"):
         outside_range = ~validated[column].between(0.0, 1.0, inclusive="both")
@@ -118,18 +177,92 @@ def validate_hourly_input(
                 f"{column} muss zwischen 0 und 1 liegen; Zeile {row} enthält {value}."
             )
 
-    _require_nonnegative(validated, "grid_emission_factor")
+    if not regulatory_only:
+        _require_nonnegative(validated, "grid_emission_factor")
     _require_nonnegative(validated, "h2_demand")
     if validated["h2_demand"].sum() <= 0.0:
         raise HourlyInputError(
             "Die gesamte H2-Nachfrage muss größer als null sein."
         )
 
-    validated.attrs = dict(data.attrs)
+    factor_contract = _validate_emission_factor_contract(
+        data, require_separate=require_separate_emission_factors,
+        emissions_reporting=emissions_reporting,
+    )
+    validated.attrs = deepcopy(data.attrs)
+    validated.attrs.update(factor_contract)
     validated.attrs["column_units"] = dict(HOURLY_COLUMN_UNITS)
+    if regulatory_only:
+        validated.attrs["column_units"].pop("grid_emission_factor")
+    if REGULATORY_EMISSION_COLUMN in validated.columns:
+        validated.attrs["column_units"][REGULATORY_EMISSION_COLUMN] = EMISSION_FACTOR_UNIT
     validated.attrs["time_zone"] = "UTC"
     validated.attrs["frequency"] = "1h"
+    validated.attrs["emissions_reporting"] = emissions_reporting
+    validated.attrs["operational_emissions_status"] = "not_evaluated" if regulatory_only else "evaluated"
     return validated
+
+
+def _validate_emission_factor_contract(
+    data: pd.DataFrame, *, require_separate: bool,
+    emissions_reporting: str = COMPLETE_EMISSIONS_REPORTING,
+) -> dict[str, object]:
+    """Prevent an explicit factor pair from silently sharing a legacy source."""
+    declared_mode = data.attrs.get("emission_factor_mode")
+    regulatory_only = emissions_reporting == REGULATORY_ONLY_EMISSION_MODE
+    if declared_mode not in (None, LEGACY_EMISSION_MODE, SEPARATE_EMISSION_MODE, REGULATORY_ONLY_EMISSION_MODE):
+        raise HourlyInputError("Unbekannter emission_factor_mode in den Eingabemetadaten.")
+    if regulatory_only and declared_mode not in (None, REGULATORY_ONLY_EMISSION_MODE):
+        raise HourlyInputError("regulatory_only widerspricht dem emission_factor_mode der Quellenmetadaten.")
+    if not regulatory_only and declared_mode == REGULATORY_ONLY_EMISSION_MODE:
+        raise HourlyInputError("regulatory_only benötigt eine explizite emissions_reporting-Auswahl.")
+    has_regulatory = REGULATORY_EMISSION_COLUMN in data.columns
+    if require_separate or declared_mode == SEPARATE_EMISSION_MODE:
+        if not has_regulatory:
+            raise HourlyInputError(
+                "Getrennte Emissionsfaktoren sind erforderlich; "
+                "regulatory_grid_emission_factor fehlt."
+            )
+    if not has_regulatory:
+        if data.attrs.get("emission_factor_sources"):
+            raise HourlyInputError(
+                "emission_factor_sources beschreibt getrennte Faktoren, "
+                "aber regulatory_grid_emission_factor fehlt."
+            )
+        return {"emission_factor_mode": LEGACY_EMISSION_MODE}
+    if declared_mode == LEGACY_EMISSION_MODE:
+        raise HourlyInputError(
+            "regulatory_grid_emission_factor widerspricht legacy_shared_factor."
+        )
+    sources = data.attrs.get("emission_factor_sources")
+    if not isinstance(sources, dict):
+        raise HourlyInputError("Getrennte Faktoren benötigen emission_factor_sources.")
+    if regulatory_only and set(sources) != {"regulatory"}:
+        raise HourlyInputError("regulatory_only benötigt nur eine regulatorische Quelle; operational darf nicht vorgetäuscht werden.")
+    for role in (("regulatory",) if regulatory_only else ("operational", "regulatory")):
+        source = sources.get(role)
+        if not isinstance(source, dict):
+            raise HourlyInputError(f"emission_factor_sources.{role} fehlt.")
+        for key in ("source_description", "spatial_scope", "emissions_basis"):
+            if not isinstance(source.get(key), str) or not source[key].strip():
+                raise HourlyInputError(f"emission_factor_sources.{role}.{key} fehlt.")
+        year = source.get("reference_year")
+        if isinstance(year, bool) or not isinstance(year, int) or not 1900 <= year <= 2100:
+            raise HourlyInputError(
+                f"emission_factor_sources.{role}.reference_year muss ein Bezugsjahr sein."
+            )
+        if source.get("unit") != EMISSION_FACTOR_UNIT:
+            raise HourlyInputError(
+                f"emission_factor_sources.{role}.unit muss {EMISSION_FACTOR_UNIT} sein."
+            )
+    try:
+        json.dumps(sources, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise HourlyInputError("emission_factor_sources muss gültige JSON-Metadaten enthalten.") from exc
+    return {
+        "emission_factor_mode": REGULATORY_ONLY_EMISSION_MODE if regulatory_only else SEPARATE_EMISSION_MODE,
+        "emission_factor_sources": deepcopy(sources),
+    }
 
 
 def _validate_expected_hours(expected_hours: int | None) -> None:
@@ -204,6 +337,12 @@ def _require_nonnegative(data: pd.DataFrame, column: str) -> None:
 
 __all__ = [
     "EXPECTED_TIME_STEP",
+    "EMISSION_FACTOR_UNIT",
+    "LEGACY_EMISSION_MODE",
+    "REGULATORY_EMISSION_COLUMN",
+    "REGULATORY_ONLY_EMISSION_MODE",
+    "COMPLETE_EMISSIONS_REPORTING",
+    "SEPARATE_EMISSION_MODE",
     "HOURLY_COLUMN_UNITS",
     "HourlyInputError",
     "NUMERIC_HOURLY_COLUMNS",

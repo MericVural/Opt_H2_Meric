@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "date": "2026-10-06",
+  "daily_GUI_checks": 66,
+  "fresh_checkout_checks": 43,
+  "EU_input_preflights": 6,
+  "own_daily_hourly_cases": 6,
+  "registry_warnings": 0,
+  "input_profiles": 7,
+  "saved_native_result_directories": 279,
+  "snapshot_files": 1468,
+  "snapshot_manifest_sha256": "afce033edc2fbae64896371ef8ba0b1488192af315bb6bffad463b165efeadb5",
+  "archive_total_bytes": 199644782,
+  "annual_cases_recomputed": 0,
+  "verification_runtime": "Existing verified Python 3.11 project runtime; complete source and data restored to a separate clean checkout. A new Internet installation of pip packages was not performed.",
+  "proofs": {
+    "gui/checks/handoff_evidence/daily_analysis.xml": "5f385f6728a01b9b8e33df3bd4e82fb7014bb9810dc3216b20f76d035f1bd19d",
+    "gui/checks/handoff_evidence/fresh_checkout.xml": "2aaf71a41f2be94af51c405796deacc7cb894c3f6b860fe250850dbe876fe08d"
+  }
+}

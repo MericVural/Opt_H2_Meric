@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import calendar
 import hashlib
 import json
 import os
@@ -11,6 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Final, Sequence
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import numpy as np
 import pandas as pd
@@ -90,6 +92,8 @@ def validate_h2_results(
         )
 
     comparison = pd.read_csv(comparison_path)
+    batch_metadata_path = results_root / "scenario_comparison_metadata.json"
+    batch_metadata = json.loads(batch_metadata_path.read_text(encoding="utf-8")) if batch_metadata_path.is_file() else None
     required_comparison = {
         "scenario_id",
         "scenario",
@@ -148,7 +152,29 @@ def validate_h2_results(
             raise ValueError(f"{summary_path} muss genau eine Zeile enthalten.")
         summary_row = summary.iloc[0]
         parameters = metadata.get("model_parameters", {})
-        annualization_factor = float(summary_row["annualization_factor"])
+        _check_sensitivity_contract(checks, scenario, validated_input, metadata, parameters, validated_input_path)
+        correlation_timezone = _check_temporal_calendar_contract(checks, scenario, metadata, batch_metadata)
+        annualization_factor = _check_annualization_contract(
+            checks, scenario, hourly, validated_input, metadata, summary_row, parameters
+        )
+        comparison_factor = getattr(comparison_row, "annualization_factor", float("nan"))
+        comparison_ok = np.isfinite(float(comparison_factor)) and abs(float(comparison_factor)-annualization_factor) <= 1e-9
+        for name in ("annual_hours", "modeled_hours", "annualization_basis"):
+            if name in summary_row.index:
+                comparison_ok = comparison_ok and getattr(comparison_row, name, None) == summary_row[name]
+        _add_check(checks, scenario=scenario, check_id="annualization_comparison_matches_run",
+                   value=float(bool(comparison_ok)), limit="= 1", passed=bool(comparison_ok),
+                   detail="Szenarienvergleich übernimmt dieselbe unabhängig geprüfte Annualisierung wie der Einzellauf.")
+        if isinstance(batch_metadata, dict) and ("annualization" in batch_metadata
+                or str(batch_metadata.get("schema_version")) not in {"1.0","1.1","1.2"}):
+            batch_contract = batch_metadata.get("annualization")
+            modeled = len(hourly) * _parameter_value(parameters,"study.time_step_hours")
+            batch_ok = (isinstance(batch_contract,dict)
+                        and batch_contract.get("annual_hours") == round(annualization_factor*modeled,9)
+                        and batch_contract.get("modeled_hours") == modeled
+                        and batch_contract.get("basis") == summary_row.get("annualization_basis"))
+            _add_check(checks,scenario=scenario,check_id="annualization_batch_metadata",value=float(bool(batch_ok)),
+                       limit="= 1",passed=bool(batch_ok),detail="Auch die Stapel-Metadaten stimmen mit der unabhängig ermittelten Jahresbasis überein.")
 
         _check_time_axis(
             checks,
@@ -310,51 +336,65 @@ def validate_h2_results(
             detail="Jahresnachfrage aus Stundenwerten und Annualisierungsfaktor.",
         )
 
-        operational_emission_residual = (
-            hourly["operational_grid_emissions_kg_co2e"]
-            - hourly["grid_import_mwh"] * hourly["grid_emission_factor_kg_co2e_per_mwh"]
+        regulatory_factor = _check_emission_factor_contract(
+            checks, scenario, validated_input, hourly, metadata, summary_row
         )
+        has_operational_factor = "grid_emission_factor" in validated_input.columns
+        if has_operational_factor:
+            operational_emission_residual = (
+                hourly["operational_grid_emissions_kg_co2e"]
+                - hourly["grid_import_mwh"] * validated_input["grid_emission_factor"]
+            )
         regulatory_emission_residual = (
             hourly["regulatory_emissions_kg_co2e"]
             - hourly["regulatory_non_renewable_electricity_mwh"]
-            * hourly["grid_emission_factor_kg_co2e_per_mwh"]
+            * regulatory_factor
         )
-        _max_abs_check(
-            checks,
-            scenario,
-            "hourly_operational_emissions",
-            operational_emission_residual,
-            1e-5,
-            "Physischer Netzbezug multipliziert mit dem stündlichen Netzfaktor.",
-        )
+        if has_operational_factor:
+            _max_abs_check(
+                checks,
+                scenario,
+                "hourly_operational_emissions",
+                operational_emission_residual,
+                1e-5,
+                "Physischer Netzbezug multipliziert mit dem stündlichen Netzfaktor.",
+            )
+        else:
+            comparison_ok = all(
+                column in comparison.columns and pd.isna(getattr(comparison_row, column))
+                for column in ("annual_grid_emissions_kg_co2e", "operational_emission_intensity_kg_co2e_per_kg_h2")
+            ) and getattr(comparison_row, "emissions_reporting", None) == "regulatory_only" and getattr(comparison_row, "operational_emissions_status", None) == "not_evaluated"
+            _add_check(
+                checks, scenario=scenario, check_id="comparison_operational_emissions_not_evaluated",
+                value=float(comparison_ok), limit="= 1", passed=bool(comparison_ok),
+                detail="Der Szenarienvergleich darf fehlende operative Emissionsresultate nicht durch null ersetzen.",
+            )
         _max_abs_check(
             checks,
             scenario,
             "hourly_regulatory_emissions",
             regulatory_emission_residual,
             1e-5,
-            "Regulatorisch nicht erneuerbare Strommenge multipliziert mit dem Netzfaktor.",
-        )
-        annual_operational = (
-            float(hourly["operational_grid_emissions_kg_co2e"].sum())
-            * annualization_factor
+            "Regulatorisch nicht erneuerbare Strommenge multipliziert mit dem regulatorischen Eingabefaktor.",
         )
         annual_regulatory = (
             float(hourly["regulatory_emissions_kg_co2e"].sum())
             * annualization_factor
         )
-        for check_id, calculated, exported in (
-            (
-                "annual_operational_emissions",
-                annual_operational,
-                float(summary_row["annual_grid_emissions_kg_co2e"]),
-            ),
+        annual_emission_checks = [
             (
                 "annual_regulatory_emissions",
                 annual_regulatory,
                 float(summary_row["annual_regulatory_emissions_kg_co2e"]),
             ),
-        ):
+        ]
+        if has_operational_factor:
+            annual_emission_checks.append((
+                "annual_operational_emissions",
+                float(hourly["operational_grid_emissions_kg_co2e"].sum()) * annualization_factor,
+                float(summary_row["annual_grid_emissions_kg_co2e"]),
+            ))
+        for check_id, calculated, exported in annual_emission_checks:
             residual = calculated - exported
             tolerance = max(1e-4, RELATIVE_TOLERANCE * max(abs(exported), 1.0))
             _add_check(
@@ -369,11 +409,13 @@ def validate_h2_results(
 
         renewable = hourly["pv_generation_mwh"] + hourly["wind_generation_mwh"]
         rfnbo_use = hourly["rf_nbo_electricity_mwh"]
+        correlation_period_count = 0
         if scenario == "red_monthly":
             timestamps = pd.to_datetime(hourly["timestamp"], utc=True)
             monthly_margin = (renewable - rfnbo_use).groupby(
-                timestamps.dt.strftime("%Y-%m")
+                timestamps.dt.tz_convert(correlation_timezone).dt.strftime("%Y-%m")
             ).sum()
+            correlation_period_count = len(monthly_margin)
             minimum_margin = float(monthly_margin.min())
             _add_check(
                 checks,
@@ -382,9 +424,10 @@ def validate_h2_results(
                 value=minimum_margin,
                 limit=f">= {-ELECTRICITY_TOLERANCE_MWH} MWh",
                 passed=minimum_margin >= -ELECTRICITY_TOLERANCE_MWH,
-                detail="Kleinste monatliche Differenz Erzeugung minus RFNBO-Strombedarf.",
+                detail=f"Kleinste Differenz Erzeugung minus Elektrolyse- und Kompressorstrombedarf im Kalender-Monat ({correlation_timezone}).",
             )
         elif scenario == "red_hourly":
+            correlation_period_count = len(hourly)
             minimum_margin = float((renewable - rfnbo_use).min())
             _add_check(
                 checks,
@@ -395,6 +438,14 @@ def validate_h2_results(
                 passed=minimum_margin >= -ELECTRICITY_TOLERANCE_MWH,
                 detail="Kleinste stündliche Differenz Erzeugung minus RFNBO-Strombedarf.",
             )
+
+        temporal = metadata.get("result", {}).get("red_iii_temporal_check", {})
+        count_ok = (summary_row.get("red_iii_correlation_periods") == correlation_period_count
+                    and type(temporal.get("number_of_correlation_periods")) is int
+                    and temporal["number_of_correlation_periods"] == correlation_period_count)
+        _add_check(checks, scenario=scenario, check_id="red_temporal_period_count",
+                   value=float(correlation_period_count), limit="= Summary- und Metadaten-Zähler", passed=bool(count_ok),
+                   detail="S1 zählt unabhängige Ortsmonate einschließlich Jahr, S2 physische Stunden; S0/S3 haben keine Zeitkorrelation.")
 
         _check_parameter_documentation(checks, scenario, parameters)
         samples.extend(
@@ -415,7 +466,7 @@ def validate_h2_results(
     _write_csv_atomic(samples_frame, paths["samples"])
     _write_json_atomic(
         {
-            "schema_version": "1.0",
+            "schema_version": "1.1",
             "created_at_utc": datetime.now(timezone.utc).isoformat(),
             "method": "Unabhängige Ex-post-Nachrechnung aus exportierten CSV- und JSON-Dateien",
             "source_comparison": {
@@ -437,8 +488,11 @@ def validate_h2_results(
             "scope_note": (
                 "Die Prüfung validiert numerische Modellbilanzen, Ergebnisexport, "
                 "monatliche beziehungsweise stündliche Strommengen-Korrelation und "
-                "den implementierten THG-Teil. Externe Nachweise zu Zusätzlichkeit, "
-                "geografischer Korrelation, Gebotszone, Vertrag und Allokation bleiben "
+                "den implementierten THG-Teil. "
+                "Im regulatory_only-Modus bestätigt sie außerdem das explizite "
+                "Nichtbewerten betrieblicher Emissionen; fehlende Werte sind kein Nullergebnis. "
+                "Externe Nachweise zu Zusätzlichkeit, geografischer Korrelation, "
+                "Gebotszone, Vertrag und Allokation bleiben "
                 "außerhalb dieser technischen Validierung."
             ),
             "output_files": {
@@ -456,6 +510,204 @@ def validate_h2_results(
         paths["report"],
         all_passed,
     )
+
+
+def _check_emission_factor_contract(
+    checks: list[dict[str, object]],
+    scenario: str,
+    validated_input: pd.DataFrame,
+    hourly: pd.DataFrame,
+    metadata: dict[str, object],
+    summary_row: pd.Series,
+) -> pd.Series:
+    """Verify both exported factors against input, without optimizer helpers.
+
+    Historical exports without the optional input column keep their explicit
+    legacy interpretation. A new separate pair requires its own sources.
+    """
+    input_metadata = metadata.get("input", {})
+    if not isinstance(input_metadata, dict):
+        input_metadata = {}
+    mode = input_metadata.get("emission_factor_mode", "legacy_shared_factor")
+    separate = "regulatory_grid_emission_factor" in validated_input.columns
+    operational_present = "grid_emission_factor" in validated_input.columns
+    regulatory_only = not operational_present
+    expected_mode = "regulatory_only" if regulatory_only else "explicit_separate_factors" if separate else "legacy_shared_factor"
+    expected_reporting = "regulatory_only" if regulatory_only else "complete"
+    reporting = input_metadata.get("emissions_reporting", "complete")
+    mode_ok = mode == expected_mode and reporting == expected_reporting
+    if "emission_factor_mode" in summary_row.index:
+        mode_ok = mode_ok and summary_row["emission_factor_mode"] == mode
+    result_metadata = metadata.get("result", {})
+    result_emissions = result_metadata.get("emissions", {})
+    if "emissions_reporting" in summary_row.index:
+        mode_ok = mode_ok and summary_row["emissions_reporting"] == expected_reporting
+    if "emissions_reporting" in result_metadata:
+        mode_ok = mode_ok and result_metadata["emissions_reporting"] == expected_reporting
+    if "factor_mode" in result_emissions:
+        mode_ok = mode_ok and result_emissions["factor_mode"] == expected_mode
+    _add_check(
+        checks, scenario=scenario, check_id="emission_factor_mode_consistency",
+        value=float(mode_ok), limit="= 1", passed=bool(mode_ok),
+        detail=f"Eingabespalten und Metadaten müssen {expected_mode} ausweisen.",
+    )
+    sources = input_metadata.get("emission_factor_sources")
+    sources_ok = True
+    if separate:
+        sources_ok = isinstance(sources, dict)
+        if regulatory_only:
+            sources_ok = sources_ok and set(sources or {}) == {"regulatory"}
+        for role in (("regulatory",) if regulatory_only else ("operational", "regulatory")):
+            source = sources.get(role) if isinstance(sources, dict) else None
+            if not isinstance(source, dict):
+                sources_ok = False
+                continue
+            year = source.get("reference_year")
+            sources_ok = sources_ok and (
+                all(isinstance(source.get(key), str) and bool(source[key].strip())
+                    for key in ("source_description", "spatial_scope", "emissions_basis"))
+                and isinstance(year, int) and not isinstance(year, bool)
+                and 1900 <= year <= 2100 and source.get("unit") == "kg_CO2e/MWh"
+            )
+        try:
+            json.dumps(sources, allow_nan=False)
+        except (TypeError, ValueError):
+            sources_ok = False
+    _add_check(
+        checks, scenario=scenario, check_id="emission_factor_sources_documented",
+        value=float(sources_ok), limit="= 1", passed=bool(sources_ok),
+        detail=("Nur die eigenständige regulatorische Quelle mit Basis, Jahr, Raum und Einheit; keine vorgetäuschte operative Quelle."
+                if regulatory_only else "Eigenständige operative und regulatorische Quellen mit Basis, Jahr, Raum und Einheit."
+                if separate else "Legacy-Eingabe: gemeinsam verwendeter Faktor, kein separater Quellenbeleg."),
+    )
+    if regulatory_only:
+        absent_ok = (
+            "grid_emission_factor_kg_co2e_per_mwh" not in hourly.columns
+            and "operational_grid_emissions_kg_co2e" not in hourly.columns
+            and all(column in summary_row.index and pd.isna(summary_row[column])
+                    for column in ("annual_grid_emissions_kg_co2e", "operational_emission_intensity_kg_co2e_per_kg_h2"))
+            and result_emissions.get("operational_grid_emissions_kg_co2e_per_year", "missing") is None
+            and result_emissions.get("operational_intensity_kg_co2e_per_kg_h2", "missing") is None
+            and summary_row.get("operational_emissions_status") == "not_evaluated"
+            and result_metadata.get("operational_emissions_status") == "not_evaluated"
+            and result_metadata.get("emissions_reporting") == "regulatory_only"
+        )
+        _add_check(
+            checks, scenario=scenario, check_id="operational_emissions_not_evaluated",
+            value=float(absent_ok), limit="= 1", passed=bool(absent_ok),
+            detail="Operative Faktoren fehlen ausdrücklich; CSV-Kennzahlen sind leer und JSON-Kennzahlen null, niemals ein Nullfaktor/-ergebnis.",
+        )
+    else:
+        operational = validated_input["grid_emission_factor"]
+        _max_abs_check(
+            checks, scenario, "operational_factor_matches_input",
+            hourly["grid_emission_factor_kg_co2e_per_mwh"] - operational,
+            1e-8, "Operativer Exportfaktor stimmt mit der validierten Eingabe überein.",
+        )
+        status_ok = (summary_row.get("operational_emissions_status", "evaluated") == "evaluated"
+                     and result_metadata.get("operational_emissions_status", "evaluated") == "evaluated")
+        _add_check(checks, scenario=scenario, check_id="operational_emissions_evaluated_status",
+                   value=float(status_ok), limit="= 1", passed=bool(status_ok),
+                   detail="Vollständige Emissionseingaben werden als ausgewertet gekennzeichnet.")
+    regulatory = (validated_input["regulatory_grid_emission_factor"] if separate
+                  else validated_input.get("grid_emission_factor", pd.Series(np.nan, index=validated_input.index)))
+    output_regulatory = hourly.get("regulatory_grid_emission_factor_kg_co2e_per_mwh")
+    regulatory_present_ok = output_regulatory is not None or not separate
+    _add_check(
+        checks, scenario=scenario, check_id="regulatory_factor_export_present",
+        value=float(regulatory_present_ok), limit="= 1", passed=regulatory_present_ok,
+        detail="Getrennte Eingaben benötigen eine getrennte regulatorische Exportspalte.",
+    )
+    if output_regulatory is None:
+        output_regulatory = hourly.get("grid_emission_factor_kg_co2e_per_mwh", pd.Series(np.nan, index=hourly.index))
+    _max_abs_check(
+        checks, scenario, "regulatory_factor_matches_input",
+        output_regulatory - regulatory, 1e-8,
+        "Regulatorischer Exportfaktor stimmt mit der eigenen Eingabespalte bzw. dokumentiertem Legacy-Modus überein.",
+    )
+    factor_series = [regulatory, output_regulatory]
+    if operational_present:
+        factor_series.extend([validated_input["grid_emission_factor"], hourly["grid_emission_factor_kg_co2e_per_mwh"]])
+    factors_finite = all(
+        np.isfinite(values.to_numpy(dtype=float)).all() and (values >= 0.0).all()
+        for values in factor_series
+    )
+    _add_check(
+        checks, scenario=scenario, check_id="emission_factors_finite_nonnegative",
+        value=float(factors_finite), limit="= 1", passed=bool(factors_finite),
+        detail="Fehlende oder ungültige Faktoren dürfen nicht als null behandelt werden.",
+    )
+    if separate:
+        receipt_ok = _independent_source_contract_matches(input_metadata, summary_row, validated_input)
+        _add_check(
+            checks, scenario=scenario, check_id="emission_factor_source_contract_hash",
+            value=float(receipt_ok), limit="= 1", passed=bool(receipt_ok),
+            detail="Der unveränderte Quellenvertrag ist an die ursprünglichen CSV-Bytes gebunden und stimmt mit den Exportmetadaten überein.",
+        )
+    return regulatory
+
+
+def _independent_source_contract_matches(input_metadata: dict, summary_row: pd.Series, validated_input: pd.DataFrame) -> bool:
+    """Re-read the source receipt independently, without importing runner code."""
+    receipt = input_metadata.get("emission_factor_metadata")
+    if not isinstance(receipt, dict):
+        return False
+    try:
+        receipt_path = Path(receipt["source_path"])
+        source_csv = Path(input_metadata["source_path"])
+        contract = json.loads(receipt_path.read_text(encoding="utf-8"))
+        if not isinstance(contract, dict):
+            return False
+        declared = {key: contract[key] for key in (
+            "site_id", "country_code", "calendar_timezone", "historical_year", "price_year",
+            "annualization_basis", "annual_hours", "expected_hours", "demand_profile",
+        ) if key in contract}
+        if declared != input_metadata.get("declared_input_context", {}):
+            return False
+        if any(input_metadata.get(key) != value for key, value in declared.items()):
+            return False
+        site = input_metadata.get("eu_site_configuration")
+        if isinstance(site, dict):
+            expected = {"site_id": site.get("site_id"), "country_code": site.get("country_code"),
+                        "calendar_timezone": site.get("calendar_timezone"), "historical_year": site.get("historical_year"),
+                        "price_year": site.get("wacc", {}).get("cost_price_year"),
+                        "annualization_basis":site.get("annualization",{}).get("basis"),
+                        "annual_hours":site.get("annualization",{}).get("annual_hours"),
+                        "expected_hours":site.get("time_contract",{}).get("expected_hours")}
+            if any(value != expected.get(key) for key, value in declared.items() if key != "demand_profile"):
+                return False
+            if "demand_profile" in declared and (not isinstance(declared["demand_profile"],dict)
+                    or declared["demand_profile"].get("annual_kg") != site.get("annualization",{}).get("annual_h2_delivery_kg")):
+                return False
+        raw_input = pd.read_csv(source_csv)
+        if len(raw_input) != len(validated_input):
+            return False
+        if contract.get("emission_factor_mode") == "regulatory_only" and "grid_emission_factor" in raw_input.columns:
+            return False
+        required_numeric = ["pv_capacity_factor", "wind_capacity_factor", "electricity_price", "h2_demand", "regulatory_grid_emission_factor"]
+        if "grid_emission_factor" in validated_input.columns:
+            required_numeric.append("grid_emission_factor")
+        for column in required_numeric:
+            if column not in raw_input.columns or column not in validated_input.columns:
+                return False
+            left = pd.to_numeric(raw_input[column], errors="raise").to_numpy(dtype=float)
+            right = pd.to_numeric(validated_input[column], errors="raise").to_numpy(dtype=float)
+            if not np.isfinite(left).all() or not np.isfinite(right).all() or not np.allclose(left, right, rtol=1e-12, atol=1e-12):
+                return False
+        raw_time = pd.to_datetime(raw_input["timestamp"], errors="raise", utc=True)
+        exported_time = pd.to_datetime(validated_input["timestamp"], errors="raise", utc=True)
+        if not raw_time.equals(exported_time):
+            return False
+        return (
+            _sha256(receipt_path) == receipt.get("sha256")
+            and _sha256(source_csv) == input_metadata.get("sha256") == summary_row["input_sha256"]
+            and contract.get("schema_version") == "1.0"
+            and contract.get("input_sha256") == input_metadata.get("sha256")
+            and contract.get("emission_factor_mode") == input_metadata.get("emission_factor_mode")
+            and contract.get("emission_factor_sources") == input_metadata.get("emission_factor_sources")
+        )
+    except (OSError, KeyError, TypeError, ValueError):
+        return False
 
 
 def _check_time_axis(
@@ -493,6 +745,348 @@ def _check_time_axis(
         passed=bool(hourly_steps),
         detail="Eindeutige, sortierte und lückenlos stündliche UTC-Zeitachse.",
     )
+
+
+def _check_sensitivity_contract(
+    checks: list[dict[str, object]], scenario: str, data: pd.DataFrame,
+    metadata: dict, parameters: dict, validated_input_path: Path,
+) -> None:
+    """Independently reconstruct OAT changes and parent data; no optimizer helper is reused."""
+    provenance = metadata.get("input", {}).get("sensitivity_provenance")
+    override = metadata.get("sensitivity_override")
+    if provenance is None and override is None:
+        # A derived source contract still requires the exported sensitivity
+        # fields; deleting both fields must not disable this independent audit.
+        try:
+            receipt = metadata["input"]["emission_factor_metadata"]
+            contract = json.loads(Path(receipt["source_path"]).read_text(encoding="utf-8"))
+            if not any(key in contract for key in ("parent_input", "case_transformation", "baseline_configuration")):
+                return
+        except (KeyError, TypeError, ValueError, OSError):
+            return  # The existing source-contract checks handle missing sources.
+    input_ok, config_ok = True, True
+    try:
+        parent = provenance["parent_input"]
+        record = provenance["case_transformation"]
+        snapshot_receipt = provenance["baseline_configuration"]
+        source_receipt = metadata["input"]["emission_factor_metadata"]
+        child_contract = json.loads(Path(source_receipt["source_path"]).read_text(encoding="utf-8"))
+        input_ok = all(child_contract.get(key) == provenance[key]
+                       for key in ("parent_input", "case_transformation", "baseline_configuration"))
+        input_ok = input_ok and _sha256(Path(parent["path"])) == parent["sha256"] and _sha256(Path(parent["metadata_path"])) == parent["metadata_sha256"]
+        source = json.loads(Path(parent["metadata_path"]).read_text(encoding="utf-8"))
+        input_ok = input_ok and source.get("input_sha256") == parent["sha256"] and source.get("emission_factor_sources") == metadata["input"].get("emission_factor_sources")
+        input_ok = input_ok and source.get("emission_factor_mode") == metadata["input"].get("emission_factor_mode")
+        parent_context = {key: source[key] for key in (
+            "site_id", "country_code", "calendar_timezone", "historical_year", "price_year",
+            "annualization_basis", "annual_hours", "expected_hours", "demand_profile",
+        ) if key in source}
+        if record.get("parameter") == "h2_demand_multiplier" and "demand_profile" in parent_context:
+            profile = dict(parent_context["demand_profile"])
+            for quantity in ("annual_kg", "kg_per_active_hour"):
+                if quantity in profile:
+                    original_quantity = profile[quantity]
+                    input_ok = input_ok and not isinstance(original_quantity, bool) and np.isfinite(float(original_quantity)) and original_quantity > 0
+                    profile[quantity] = original_quantity * record["value"]
+            input_ok = input_ok and "annual_kg" in profile
+            parent_context["demand_profile"] = profile
+        input_ok = input_ok and parent_context == metadata["input"].get("declared_input_context", {})
+        original = pd.read_csv(parent["path"], dtype=str, keep_default_na=False)
+        data = pd.read_csv(validated_input_path, dtype=str, keep_default_na=False)
+        input_ok = input_ok and original.columns.tolist() == data.columns.tolist() and len(original) == len(data)
+        intervention = record["parameter"]
+        for column in original.columns:
+            if column == "timestamp":
+                input_ok = input_ok and pd.to_datetime(original[column], utc=True).equals(pd.to_datetime(data[column], utc=True))
+            elif column in ("pv_capacity_factor", "wind_capacity_factor", "electricity_price",
+                            "grid_emission_factor", "regulatory_grid_emission_factor", "h2_demand"):
+                expected = pd.to_numeric(original[column])
+                if column == "electricity_price" and intervention == "electricity_price_offset_eur_per_mwh": expected = expected + record["value"]
+                elif column == "electricity_price" and intervention == "electricity_price_eur_per_mwh": expected = pd.Series(record["value"], index=expected.index)
+                elif column == "h2_demand" and intervention == "h2_demand_multiplier": expected = expected * record["value"]
+                same = np.allclose(pd.to_numeric(data[column]), expected, rtol=1e-12, atol=1e-12, equal_nan=True)
+                input_ok = input_ok and same
+            else:
+                input_ok = input_ok and data[column].equals(original[column])
+        config_ok = _sha256(Path(snapshot_receipt["path"])) == snapshot_receipt["sha256"]
+        baseline = json.loads(Path(snapshot_receipt["path"]).read_text(encoding="utf-8"))
+        base_parameters = baseline["model_parameters"]
+        if "accepted_baseline_metadata" in baseline:
+            receipt = baseline["accepted_baseline_metadata"]
+            config_ok = config_ok and _sha256(Path(receipt["path"])) == receipt["sha256"]
+            accepted = json.loads(Path(receipt["path"]).read_text(encoding="utf-8"))
+            actual = {key: {name: item.get(name) for name in ("value", "unit", "reference_year")}
+                      for key, item in accepted["model_parameters"].items()}
+            config_ok = config_ok and actual == base_parameters and accepted["input"]["sha256"] == parent["sha256"]
+        expected_values = {key: item["value"] for key, item in base_parameters.items()}
+        value = record.get("value")
+        targets = {
+            "electrolyzer_capex_eur_per_kw": "technologies.electrolyzer.capex_eur_per_kw",
+            "electrolyzer_specific_electricity_kwh_per_kg_h2": "technologies.electrolyzer.specific_electricity_kwh_per_kg_h2",
+            "pv_capex_eur_per_kw": "technologies.pv.capex_eur_per_kw", "wind_capex_eur_per_kw": "technologies.wind_onshore.capex_eur_per_kw",
+            "h2_storage_capex_eur_per_kg_h2": "technologies.h2_storage.capex_eur_per_kg_h2",
+        }
+        wacc_keys = [f"technologies.{name}.real_wacc_fraction" for name in ("pv", "wind_onshore", "electrolyzer", "compressor", "h2_storage")]
+        operations = {
+            "baseline": "unchanged", "real_wacc_shift_fraction": "add_to_all_five_real_wacc_rates",
+            "real_wacc_multiplier": "multiply_all_five_real_wacc_rates",
+            "uniform_real_wacc_fraction": "replace_baseline_scalar",
+            "electricity_price_offset_eur_per_mwh": "add_to_hourly_price_profile",
+            "electricity_price_eur_per_mwh": "replace_hourly_prices_with_constant",
+            "electrolyzer_capex_factor": "multiply_baseline_scalar",
+            "electrolyzer_specific_electricity_factor": "multiply_baseline_scalar",
+            "h2_demand_multiplier": "multiply_hourly_h2_demand_preserve_profile",
+            **{key: "replace_baseline_scalar" for key in targets},
+        }
+        config_ok = config_ok and record.get("operation") == operations.get(intervention)
+        if intervention != "baseline":
+            config_ok = config_ok and not isinstance(value, bool) and np.isfinite(float(value))
+            config_ok = config_ok and isinstance(record.get("source"), str) and bool(record["source"].strip())
+            config_ok = config_ok and isinstance(record.get("note"), str)
+            if intervention not in ("real_wacc_shift_fraction", "electricity_price_offset_eur_per_mwh"):
+                config_ok = config_ok and value > 0
+        if intervention == "real_wacc_shift_fraction":
+            for key in wacc_keys: expected_values[key] += value
+        elif intervention == "real_wacc_multiplier":
+            for key in wacc_keys: expected_values[key] *= value
+        elif intervention == "uniform_real_wacc_fraction":
+            for key in wacc_keys: expected_values[key] = value
+        elif intervention in ("electrolyzer_capex_factor", "electrolyzer_specific_electricity_factor"):
+            key = targets["electrolyzer_capex_eur_per_kw" if intervention == "electrolyzer_capex_factor" else "electrolyzer_specific_electricity_kwh_per_kg_h2"]
+            expected_values[key] *= value
+        elif intervention in targets:
+            expected_values[targets[intervention]] = value
+        elif intervention == "h2_demand_multiplier":
+            expected_values["study.h2_demand_kg_per_day"] *= value
+        elif intervention not in ("baseline", "electricity_price_offset_eur_per_mwh", "electricity_price_eur_per_mwh"):
+            config_ok = False
+        config_ok = config_ok and all(0 <= expected_values[key] < 1 for key in wacc_keys)
+        changed = {key: {"base_value": base_parameters[key]["value"], "applied_value": expected_values[key], "unit": base_parameters[key]["unit"]}
+                   for key in expected_values if base_parameters[key]["value"] != expected_values[key]}
+        config_ok = config_ok and changed == record.get("changed_scalar_parameters") and set(parameters) == set(base_parameters)
+        for key, expected in expected_values.items():
+            actual = parameters.get(key, {})
+            config_ok = config_ok and np.isfinite(float(actual.get("value", float("nan")))) and abs(float(actual["value"])-expected) <= 1e-10
+            config_ok = config_ok and actual.get("unit") == base_parameters[key]["unit"]
+            expected_year = None if intervention == "uniform_real_wacc_fraction" and key in wacc_keys else base_parameters[key]["reference_year"]
+            config_ok = config_ok and actual.get("reference_year") == expected_year
+        expected_override = {key: value for key, value in record.items() if key != "case_id"}
+        config_ok = config_ok and (override is None if intervention == "baseline" else override == expected_override)
+        config_ok = config_ok and baseline["model_calendar"] == metadata.get("model_calendar")
+        site = metadata["input"].get("eu_site_configuration")
+        if isinstance(site, dict):
+            config_ok = config_ok and baseline.get("eu_design_sha256") == site.get("design_sha256")
+            if override is not None:
+                config_ok = config_ok and site.get("sensitivity_override") == override
+                if intervention == "h2_demand_multiplier":
+                    annualization = site.get("annualization", {})
+                    baseline_target = base_parameters["study.h2_demand_kg_per_day"]["value"] * base_parameters["study.annual_hours"]["value"] / 24
+                    config_ok = config_ok and np.isclose(float(annualization.get("baseline_annual_h2_delivery_kg", float("nan"))), baseline_target, rtol=1e-12, atol=1e-9)
+                    config_ok = config_ok and np.isclose(float(annualization.get("annual_h2_delivery_kg", float("nan"))), baseline_target * value, rtol=1e-12, atol=1e-9)
+                    config_ok = config_ok and annualization.get("demand_multiplier") == value
+                    config_ok = config_ok and annualization.get("effective_delivery_is_sensitivity_assumption") is True
+                expected_sensitivity_rates = intervention in ("real_wacc_shift_fraction", "real_wacc_multiplier", "uniform_real_wacc_fraction")
+                config_ok = config_ok and site["wacc"].get("effective_rates_are_sensitivity_assumptions") is expected_sensitivity_rates
+                for name in ("pv", "wind_onshore", "electrolyzer", "compressor", "h2_storage"):
+                    key = f"technologies.{name}.real_wacc_fraction"
+                    config_ok = config_ok and site["wacc"]["baseline_real_wacc_fraction_per_year"].get(name) == base_parameters[key]["value"]
+                    config_ok = config_ok and site["wacc"]["real_wacc_fraction_per_year"].get(name) == expected_values[key]
+    except (KeyError, TypeError, ValueError, OSError, AttributeError):
+        input_ok, config_ok = False, False
+    _add_check(checks, scenario=scenario, check_id="sensitivity_parent_input_contract", value=float(bool(input_ok)),
+               limit="= 1", passed=bool(input_ok), detail="Originale CSV/Sidecar-Hashes und unveränderte Stundenwerte sind unabhängig geprüft; Preisoffset erhält Preisverlauf, Nachfragemultiplikator erhält Profilform und Kalender.")
+    _add_check(checks, scenario=scenario, check_id="sensitivity_one_factor_configuration", value=float(bool(config_ok)),
+               limit="= 1", passed=bool(config_ok), detail="Genau die deklarierte Intervention folgt der SHA-gebundenen Basiskonfiguration; übrige Werte, Kalender, Einheiten und Bezugsjahre bleiben erhalten.")
+
+
+def _check_temporal_calendar_contract(
+    checks: list[dict[str, object]], scenario: str,
+    metadata: dict[str, object], batch_metadata: object,
+) -> str:
+    """Check the exported calendar independently, retaining recorded UTC archives.
+
+    For EU runs the original SHA-bound design supplies the timezone. Neither
+    the optimizer's grouping helper nor a mutable output label is used to
+    construct the validator's monthly groups.
+    """
+    schema = str(metadata.get("schema_version", "1.0"))
+    legacy = schema in {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6"}
+    scope = metadata.get("calendar_scope", {})
+    model_calendar = metadata.get("model_calendar")
+    explicit = isinstance(model_calendar, dict)
+    configured = model_calendar.get("temporal_correlation_timezone") if explicit else "UTC"
+    expected_timezone = configured
+    source_ok = True
+    site = metadata.get("input", {}).get("eu_site_configuration")
+    if isinstance(site, dict) and (explicit or not legacy):
+        try:
+            raw = Path(site["design_path"]).read_bytes()
+            design = json.loads(raw.decode("utf-8-sig"))
+            rows = [row for row in design["sites"] if row.get("site_id") == site.get("site_id")]
+            source_ok = len(rows) == 1
+            if source_ok:
+                expected_timezone = rows[0]["calendar_timezone"]
+                source_ok = (hashlib.sha256(raw).hexdigest() == site.get("design_sha256")
+                    and design["time"].get("monthly_grouping") == "site local timezone"
+                    and site.get("calendar_timezone") == expected_timezone
+                    and site.get("time_contract", {}).get("monthly_grouping") == "site local timezone"
+                    and site.get("temporal_correlation") == {
+                        "monthly_basis": "site_local_timezone", "timezone": expected_timezone,
+                        "hourly_basis": "physical_utc_hour"})
+                declared = metadata.get("input", {}).get("declared_input_context", {})
+                if "calendar_timezone" in declared:
+                    source_ok = source_ok and declared["calendar_timezone"] == expected_timezone
+        except (KeyError, TypeError, ValueError, OSError):
+            source_ok = False
+    valid_timezone = True
+    try:
+        if not isinstance(expected_timezone, str):
+            raise ValueError("Missing calendar timezone")
+        ZoneInfo(expected_timezone)
+    except (ZoneInfoNotFoundError, TypeError, ValueError):
+        valid_timezone = False
+        expected_timezone = "UTC"  # Failed check remains explicit; finish other independent checks.
+    monthly_basis = "utc_calendar_month" if expected_timezone == "UTC" else "site_local_calendar_month"
+    expected_applied = isinstance(site, dict) and expected_timezone != "UTC"
+    temporal = metadata.get("result", {}).get("red_iii_temporal_check", {})
+    mode = {"red_monthly": "monthly", "red_hourly": "hourly"}.get(scenario)
+    ok = valid_timezone and (explicit or legacy) and configured == expected_timezone
+    if explicit or not legacy:
+        ok = ok and isinstance(scope, dict) and all((
+            scope.get("monthly_correlation_calendar") == expected_timezone,
+            scope.get("monthly_grouping_basis") == monthly_basis,
+            scope.get("hourly_grouping_basis") == "physical_utc_hour",
+            scope.get("site_timezone_applied_to_monthly_correlation") is expected_applied,
+            scope.get("requested_site_timezone") == (site.get("calendar_timezone") if isinstance(site, dict) else None),
+            temporal.get("calendar_timezone") == expected_timezone,
+            temporal.get("mode") == mode,
+            temporal.get("grouping_basis") == ("physical_utc_hour" if mode == "hourly" else "calendar_month" if mode == "monthly" else None),
+        ))
+    elif isinstance(scope, dict) and "monthly_correlation_calendar" in scope:
+        ok = ok and scope["monthly_correlation_calendar"] == "UTC" and scope.get("site_timezone_applied_to_monthly_correlation") is False
+    _add_check(checks, scenario=scenario, check_id="temporal_calendar_configuration",
+               value=float(bool(ok)), limit="= 1", passed=bool(ok),
+               detail="Explizite Monatszeitzone, Ortsmonatsbasis und physische UTC-Stundenbasis stimmen mit der Modellkonfiguration überein; ältere Archive behalten UTC.")
+    _add_check(checks, scenario=scenario, check_id="temporal_calendar_source_contract",
+               value=float(bool(source_ok)), limit="= 1", passed=bool(source_ok),
+               detail="EU-Monatskalender folgt der unveränderten SHA-gebundenen Design-Datei und dem Eingabequellenvertrag.")
+    if isinstance(batch_metadata, dict) and ("temporal_calendar" in batch_metadata
+            or str(batch_metadata.get("schema_version")) not in {"1.0", "1.1", "1.2", "1.3"}):
+        batch_ok = batch_metadata.get("temporal_calendar") == {
+            "timezone": expected_timezone, "monthly_grouping_basis": monthly_basis,
+            "hourly_grouping_basis": "physical_utc_hour"}
+        _add_check(checks, scenario=scenario, check_id="temporal_calendar_batch_metadata",
+                   value=float(bool(batch_ok)), limit="= 1", passed=bool(batch_ok),
+                   detail="Der Stapellauf dokumentiert denselben unabhängig geprüften Monatskalender.")
+    return expected_timezone
+
+
+def _check_annualization_contract(
+    checks: list[dict[str, object]], scenario: str,
+    hourly: pd.DataFrame, validated_input: pd.DataFrame,
+    metadata: dict[str, object], summary: pd.Series, parameters: object,
+) -> float:
+    """Derive the factor independently; never trust the exported factor alone."""
+    scope = metadata.get("calendar_scope", {})
+    contract = scope.get("annualization") if isinstance(scope, dict) else None
+    explicit = isinstance(contract, dict)
+    schema = str(metadata.get("schema_version", "1.0"))
+    requires_contract = schema not in {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
+    basis = contract.get("basis") if explicit else "legacy_365_day_reference"
+    canonical_hours = 8760.0
+    ok = explicit or not requires_contract
+    def same_number(value: object, expected: float) -> bool:
+        try:
+            return not isinstance(value, bool) and np.isfinite(float(value)) and abs(float(value)-expected) <= 1e-9
+        except (TypeError, ValueError):
+            return False
+    if basis == "historical_calendar_year":
+        year = contract.get("reference_year")
+        if type(year) is int and 1900 <= year <= 2199:
+            canonical_hours = float(24*(366 if calendar.isleap(year) else 365))
+            ok = ok and same_number(_parameter_value(parameters, "study.profile_calendar_year"), year)
+        else:
+            ok = False
+    elif basis == "legacy_365_day_reference":
+        if explicit:
+            ok = ok and contract.get("reference_year") is None
+    else:
+        ok = False
+    step = _parameter_value(parameters, "study.time_step_hours")
+    modeled_hours = float(len(hourly)) * step
+    ok = ok and step == 1.0 and 0 < modeled_hours <= canonical_hours and len(hourly) == len(validated_input)
+    expected_factor = canonical_hours / modeled_hours if modeled_hours > 0 else float("nan")
+    if explicit:
+        ok = ok and all((
+            same_number(contract.get("annual_hours"), canonical_hours),
+            same_number(contract.get("modeled_hours"), modeled_hours),
+            same_number(contract.get("time_step_hours"), step),
+            same_number(_parameter_value(parameters, "study.annual_hours"), canonical_hours),
+            same_number(summary.get("annual_hours"), canonical_hours),
+            same_number(summary.get("modeled_hours"), modeled_hours),
+            summary.get("annualization_basis") == basis,
+            contract.get("period_interpretation") == (
+                "complete_historical_calendar_year" if basis == "historical_calendar_year" and modeled_hours == canonical_hours
+                else "cyclic_period_reference_annualization"),
+        ))
+    ok = ok and same_number(_parameter_value(parameters, "study.number_of_time_steps")*step, canonical_hours)
+    site = metadata.get("input", {}).get("eu_site_configuration")
+    source_ok = True
+    if isinstance(site, dict) and not explicit and not requires_contract:
+        # Old archives never exported the new annualization source contract.
+        # Retain their explicit 365-day convention without demanding that the
+        # formerly active design path still points to the archived file today.
+        source_ok = (site.get("historical_year") == 2025
+                     and site.get("time_contract",{}).get("expected_hours") == 8760)
+    elif isinstance(site, dict):
+        try:
+            source = Path(site["design_path"])
+            raw = source.read_bytes()
+            design = json.loads(raw.decode("utf-8-sig"))
+            time = design["time"]
+            year = time["historical_year"]
+            hours = 24*(366 if calendar.isleap(year) else 365)
+            local = pd.to_datetime(validated_input["timestamp"], utc=True).dt.tz_convert(site["calendar_timezone"])
+            source_ok = (type(year) is int and hashlib.sha256(raw).hexdigest() == site["design_sha256"]
+                         and site.get("historical_year") == year and time.get("expected_hours") == hours
+                         and canonical_hours == hours and set(local.dt.year) == {year})
+            original_target = float(design["hydrogen_demand"]["annual_kg"])
+            target = original_target
+            override = metadata.get("sensitivity_override")
+            if isinstance(override, dict) and override.get("parameter") == "h2_demand_multiplier":
+                multiplier = override.get("value")
+                demand_ok = (not isinstance(multiplier, bool) and isinstance(multiplier, (int, float))
+                             and np.isfinite(multiplier) and multiplier > 0
+                             and override.get("operation") == "multiply_hourly_h2_demand_preserve_profile"
+                             and site.get("sensitivity_override") == override)
+                target = original_target * multiplier if demand_ok else float("nan")
+                annualization = site.get("annualization", {})
+                demand_ok = demand_ok and all((
+                    same_number(annualization.get("baseline_annual_h2_delivery_kg"), original_target),
+                    same_number(annualization.get("annual_h2_delivery_kg"), target),
+                    same_number(annualization.get("demand_multiplier"), multiplier),
+                    annualization.get("effective_delivery_is_sensitivity_assumption") is True,
+                    same_number(_parameter_value(parameters, "study.h2_demand_kg_per_day"), target / (hours / 24)),
+                ))
+                source_ok = source_ok and demand_ok
+            if modeled_hours == hours:
+                source_ok = source_ok and abs(float(validated_input["h2_demand"].sum())-target) <= HYDROGEN_TOLERANCE_KG
+                source_ok = source_ok and (pd.to_datetime(validated_input["timestamp"], utc=True).iloc[0] == pd.Timestamp(time["start_utc_inclusive"]))
+        except (KeyError, TypeError, ValueError, OSError):
+            source_ok = False
+    _add_check(checks, scenario=scenario, check_id="annualization_basis_consistency",
+               value=float(bool(ok)), limit="= 1", passed=bool(ok),
+               detail="Jahresstundenbasis folgt unabhängig aus Legacy-Konvention oder Gregorianischem Kalender und Modellparametern.")
+    _add_check(checks, scenario=scenario, check_id="annualization_source_contract",
+               value=float(bool(source_ok)), limit="= 1", passed=bool(source_ok),
+               detail="EU-Kalender und Volljahreslieferung folgen der SHA-gebundenen ursprünglichen Design-Datei; eine dokumentierte Nachfragesensitivität skaliert ausschließlich deren Jahresziel.")
+    factor_ok = same_number(summary.get("annualization_factor"), expected_factor)
+    if explicit:
+        factor_ok = factor_ok and same_number(contract.get("factor"), expected_factor)
+    _add_check(checks, scenario=scenario, check_id="annualization_factor_independent",
+               value=abs(float(summary["annualization_factor"])-expected_factor), limit="<= 1e-9", passed=bool(factor_ok),
+               detail="Annualisierung = unabhängig ermittelte Jahresstunden / tatsächliche modellierte Stunden.")
+    return expected_factor
 
 
 def _check_parameter_documentation(

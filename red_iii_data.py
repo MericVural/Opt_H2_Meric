@@ -20,6 +20,7 @@ from enum import Enum
 from math import isfinite
 from types import MappingProxyType
 from typing import Final, Mapping
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import numpy as np
 import pandas as pd
@@ -287,16 +288,24 @@ def temporal_mode_for_date(
 def build_correlation_periods(
     timestamps: pd.Series,
     mode: TemporalCorrelation | str,
+    *,
+    calendar_timezone: str = "UTC",
 ) -> pd.Series:
-    """Erzeuge stabile Monats- oder Stundenschlüssel für eine UTC-Zeitreihe."""
+    """Gruppiere Ortsmonate; physische Stundenschlüssel bleiben eindeutig in UTC."""
 
     correlation_mode = _coerce_temporal_mode(mode)
+    try:
+        if not isinstance(calendar_timezone, str):
+            raise ValueError("calendar_timezone muss eine IANA-Zeitzone sein.")
+        ZoneInfo(calendar_timezone)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise ValueError("calendar_timezone muss eine gültige IANA-Zeitzone sein.") from exc
     parsed = pd.to_datetime(timestamps, errors="coerce", utc=True)
     if parsed.isna().any():
         raise ValueError("timestamps enthält ungültige Datumswerte.")
 
     if correlation_mode is TemporalCorrelation.MONTHLY:
-        labels = parsed.dt.strftime("%Y-%m")
+        labels = parsed.dt.tz_convert(calendar_timezone).dt.strftime("%Y-%m")
     else:
         labels = parsed.dt.strftime("%Y-%m-%dT%H:00Z")
     labels.name = "correlation_period"
@@ -400,6 +409,7 @@ def assess_red_iii_compliance(
     temporal_mode: TemporalCorrelation | str,
     evidence: EligibilityEvidence,
     product_intensity_kg_co2e_per_kg_h2: float,
+    calendar_timezone: str = "UTC",
     use_low_price_exception: bool = False,
     ets_price_eur_per_tco2e: float | None = None,
     tolerance_mwh: float = 1e-9,
@@ -429,7 +439,7 @@ def assess_red_iii_compliance(
         )
 
     data = _validated_operation(operation)
-    periods = build_correlation_periods(data[TIMESTAMP_COLUMN], mode)
+    periods = build_correlation_periods(data[TIMESTAMP_COLUMN], mode, calendar_timezone=calendar_timezone)
     if use_low_price_exception:
         exception = low_price_exception_mask(
             data,

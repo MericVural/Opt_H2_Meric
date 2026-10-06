@@ -23,3 +23,12 @@ input_data/ghg_factors_future.json
 .ipynb_checkpoints
 unlinked.log
 ~$*
+
+# Local GUI interpreter; scientific Anaconda environment stays external.
+.venv-gui/
+
+# Machine-local sessions and generated output, never part of the handoff.
+.pytest_cache/
+output/
+.venv/
+*.log

@@ -1,2 +1,5 @@
-# Auto detect text files and perform LF normalization
+# Keep scientific hashes identical across checkout locations and platforms.
 * text=auto
+*.py -text
+input_data/** -text
+gui/data_snapshot/*.zip -text

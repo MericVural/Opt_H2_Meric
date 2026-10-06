@@ -1,0 +1,550 @@
+{
+  "schema_version": "1.0",
+  "decision_date": "2026-10-03",
+  "method": "static_annual_national_net_generation_proxy",
+  "reference_year": 2024,
+  "application_year": 2024,
+  "unit": "kg_CO2e/MWh",
+  "denominator_basis": "net_electricity_generation",
+  "formula": "EEA national gross-generation intensity * Eurostat GEP_TOTAL / NEP_TOTAL, all MAP/AP electricity-only and CHP producers, all energy sources",
+  "data_vintage_alignment": "not_verified",
+  "eea_original_denominator_reconstructed": false,
+  "storage_treatment": "Published TOTAL includes pumped and battery output. No unproved storage subtraction or double addition.",
+  "inventory_convention": "Adopt EEA published CO2e electricity-production inventory with EEA heat allocation and autoproducer estimation. EEA uses zero for nuclear and renewables including biomass; no standalone biomass CH4/N2O correction is added. Not the former JRC technology-factor method.",
+  "effect_on_dispatch": "Operational reporting only; baseline has no operational CO2 price or cap",
+  "not_a_consumption_or_marginal_factor": true,
+  "hourly_dynamic_factor_release": false,
+  "uncertainties": [
+    "EEA 2024 early estimate, rounded integer source values; no numerical uncertainty supplied",
+    "EEA and Eurostat data revision alignment not verified; own gross/net conversion is an approximate production-denominator proxy",
+    "Spanish national reference including islands transferred to Huelva/mainland; no site-specific grid measurement",
+    "Generation reference applied to physical model grid imports; imports/exports attribution, grid losses, upstream and plant construction excluded",
+    "EEA nuclear/renewables zero and CHP allocation are adopted inventory conventions, not proof of physical zero, biomass sustainability or complete lifecycle emissions",
+    "Static annual2024 factor has no hourly intensity information; no chronological emission benefit can be inferred"
+  ],
+  "uncertainty_quantified": false,
+  "sources": {
+    "eea_csv": {
+      "file": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/sources/eea_country_intensity_data.csv",
+      "sha256": "0a2668e4d109ca83e62412b94e987df6f5dce967fcc3616d602979b57eb9866e",
+      "url": "https://www.eea.europa.eu/en/analysis/indicators/greenhouse-gas-emission-intensity-of-1/greenhouse-gas-emission-intensity-of-electricity-generation/@@download/file",
+      "retrieved_at_utc": "2026-10-03T11:03:38.425422+00:00",
+      "bytes": 4261,
+      "previous_archive_file": "outputs_h2/eu_case_studies/historical_2025/step19/static_factors_20261003/sources/eea_country_intensity_data.csv"
+    },
+    "eea_chart": {
+      "file": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/sources/eea_country_indicator.html",
+      "sha256": "c86f9bc0bf01bdd22984a9802fab4cacd62055ea9f5344f8a40869a55729419a",
+      "url": "https://www.eea.europa.eu/en/analysis/indicators/greenhouse-gas-emission-intensity-of-1/greenhouse-gas-emission-intensity-of-electricity-generation",
+      "retrieved_at_utc": "2026-10-03T11:02:45.213740+00:00",
+      "bytes": 1012934,
+      "previous_archive_file": "outputs_h2/eu_case_studies/historical_2025/step19/static_factors_20261003/sources/eea_country_indicator.html"
+    },
+    "eea_methodology": {
+      "file": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/sources/eea_indicator_methodology.html",
+      "sha256": "e6466fb5bca00baa7627b47cf007b736c70e3a4ec76164ff68acdbf39fc1544a",
+      "url": "https://www.eea.europa.eu/en/analysis/indicators/greenhouse-gas-emission-intensity-of-1",
+      "retrieved_at_utc": "2026-10-03T11:05:37.279868+00:00",
+      "bytes": 1036061,
+      "previous_archive_file": "outputs_h2/eu_case_studies/historical_2025/step19/static_factors_20261003/sources/eea_indicator_methodology.html"
+    },
+    "eurostat_peh": {
+      "file": "outputs_h2/eu_case_studies/historical_2024/step19/static_factors_20261003/sources/eurostat_nrg_ind_peh_DE_ES_2024.json",
+      "sha256": "e68dfba2eee127ef112f34b2015be9c615c71a080e2a72f131d45f8255070990",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_ind_peh?lang=en&geo=DE&geo=ES&time=2024",
+      "retrieved_at_utc": "2026-10-03T01:35:28.3374425+02:00",
+      "bytes": 18445,
+      "previous_archive_file": "outputs_h2/eu_case_studies/historical_2025/step19/static_factors_20261003/sources/eurostat_nrg_ind_peh_DE_ES_2024.json"
+    }
+  },
+  "records": {
+    "DE": {
+      "country_label": "Germany",
+      "spatial_scope": "DE",
+      "application_spatial_scope": "Hamburg-Moorburg; national DE reference",
+      "eea_gross_factor_kg_co2e_per_mwh": 291.0,
+      "published_precision": "Integer EEA value as published; converted decimals are arithmetic precision, not measurement accuracy",
+      "gep_gwh": 514009.0,
+      "nep_gwh": 490978.0,
+      "gross_to_net_ratio": 1.0469084154483501,
+      "factor_kg_co2e_per_mwh": 304.65034889546985,
+      "display_factor_kg_co2e_per_mwh": 304.7,
+      "gross_total_cell": {
+        "coordinates": {
+          "freq": "A",
+          "plants": "TOTAL",
+          "operator": "TOTAL",
+          "nrg_bal": "GEP",
+          "siec": "TOTAL",
+          "unit": "GWH",
+          "geo": "DE",
+          "time": "2024"
+        },
+        "flat_index": 0,
+        "value": 514009.0,
+        "flag": null
+      },
+      "net_total_cell": {
+        "coordinates": {
+          "freq": "A",
+          "plants": "TOTAL",
+          "operator": "TOTAL",
+          "nrg_bal": "NEP",
+          "siec": "TOTAL",
+          "unit": "GWH",
+          "geo": "DE",
+          "time": "2024"
+        },
+        "flat_index": 120,
+        "value": 490978.0,
+        "flag": null
+      },
+      "producer_plant_groups": [
+        {
+          "producer": "PRR_MAIN",
+          "plant": "ELC",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 960,
+            "value": 336462.0,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 1080,
+            "value": 322483.0,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_MAPE",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 19152,
+            "value": 1211263.2,
+            "flag": null
+          }
+        },
+        {
+          "producer": "PRR_MAIN",
+          "plant": "CHP",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 1680,
+            "value": 81136.0,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 1800,
+            "value": 77665.0,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_MAPCHP",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 19296,
+            "value": 292089.6,
+            "flag": null
+          }
+        },
+        {
+          "producer": "PRR_AUTO",
+          "plant": "ELC",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 1200,
+            "value": 59174.0,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 1320,
+            "value": 56301.0,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_APE",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 19440,
+            "value": 213026.4,
+            "flag": null
+          }
+        },
+        {
+          "producer": "PRR_AUTO",
+          "plant": "CHP",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 1920,
+            "value": 37237.0,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 2040,
+            "value": 34529.0,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_APCHP",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "DE",
+              "time": "2024"
+            },
+            "flat_index": 19584,
+            "value": 134053.2,
+            "flag": null
+          }
+        }
+      ],
+      "source_eea_csv_cell": {
+        "file": "eea_country_intensity_data.csv",
+        "physical_line_including_header_1_based": 23,
+        "year_header": "2024",
+        "column_1_based": 35,
+        "spreadsheet_cell_if_imported_from_A1": "AI23",
+        "country_column_1_based": 36,
+        "raw_line": "652,656,629,620,616,594,580,566,569,550,551,566,557,543,527,508,502,516,489,486,470,488,493,486,476,446,443,414,408,348,314,345,368,316,291,Germany"
+      },
+      "reference_year": 2024,
+      "application_year": 2024
+    },
+    "ES": {
+      "country_label": "Spain",
+      "spatial_scope": "ES",
+      "application_spatial_scope": "Huelva-La Rabida / Spanish mainland; national ES including islands reference",
+      "eea_gross_factor_kg_co2e_per_mwh": 125.0,
+      "published_precision": "Integer EEA value as published; converted decimals are arithmetic precision, not measurement accuracy",
+      "gep_gwh": 287914.758,
+      "nep_gwh": 279398.166,
+      "gross_to_net_ratio": 1.0304819180523899,
+      "factor_kg_co2e_per_mwh": 128.81023975654873,
+      "display_factor_kg_co2e_per_mwh": 128.8,
+      "gross_total_cell": {
+        "coordinates": {
+          "freq": "A",
+          "plants": "TOTAL",
+          "operator": "TOTAL",
+          "nrg_bal": "GEP",
+          "siec": "TOTAL",
+          "unit": "GWH",
+          "geo": "ES",
+          "time": "2024"
+        },
+        "flat_index": 1,
+        "value": 287914.758,
+        "flag": null
+      },
+      "net_total_cell": {
+        "coordinates": {
+          "freq": "A",
+          "plants": "TOTAL",
+          "operator": "TOTAL",
+          "nrg_bal": "NEP",
+          "siec": "TOTAL",
+          "unit": "GWH",
+          "geo": "ES",
+          "time": "2024"
+        },
+        "flat_index": 121,
+        "value": 279398.166,
+        "flag": null
+      },
+      "producer_plant_groups": [
+        {
+          "producer": "PRR_MAIN",
+          "plant": "ELC",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 961,
+            "value": 252418.316,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 1081,
+            "value": 245087.272,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_MAPE",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 19153,
+            "value": 908705.938,
+            "flag": null
+          }
+        },
+        {
+          "producer": "PRR_MAIN",
+          "plant": "CHP",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 1681,
+            "value": 0.0,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_MAIN",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 1801,
+            "value": 0.0,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_MAPCHP",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 19297,
+            "value": 0.0,
+            "flag": null
+          }
+        },
+        {
+          "producer": "PRR_AUTO",
+          "plant": "ELC",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 1201,
+            "value": 14375.773,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "ELC",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 1321,
+            "value": 13931.432,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_APE",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 19441,
+            "value": 51752.783,
+            "flag": null
+          }
+        },
+        {
+          "producer": "PRR_AUTO",
+          "plant": "CHP",
+          "peh_gross": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "GEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 1921,
+            "value": 21120.669,
+            "flag": null
+          },
+          "peh_net": {
+            "coordinates": {
+              "freq": "A",
+              "plants": "CHP",
+              "operator": "PRR_AUTO",
+              "nrg_bal": "NEP",
+              "siec": "TOTAL",
+              "unit": "GWH",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 2041,
+            "value": 20379.462,
+            "flag": null
+          },
+          "balance_gross_tj": {
+            "coordinates": {
+              "freq": "A",
+              "nrg_bal": "GEP_APCHP",
+              "siec": "TOTAL",
+              "unit": "TJ",
+              "geo": "ES",
+              "time": "2024"
+            },
+            "flat_index": 19585,
+            "value": 76034.408,
+            "flag": null
+          }
+        }
+      ],
+      "source_eea_csv_cell": {
+        "file": "eea_country_intensity_data.csv",
+        "physical_line_including_header_1_based": 13,
+        "year_header": "2024",
+        "column_1_based": 35,
+        "spreadsheet_cell_if_imported_from_A1": "AI13",
+        "country_column_1_based": 36,
+        "raw_line": "443,438,479,452,445,491,383,423,420,495,462,412,464,409,415,429,395,407,345,315,256,317,330,268,278,316,266,305,276,214,167,165,178,140,125,Spain"
+      },
+      "reference_year": 2024,
+      "application_year": 2024
+    }
+  },
+  "temporal_year_transfer_proxy": false,
+  "year_migration_decision": "Actual2024 sources/reference year retained; source2024 applied within2024, no2024→2025 transfer"
+}

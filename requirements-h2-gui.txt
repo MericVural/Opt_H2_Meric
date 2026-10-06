@@ -1,0 +1,15 @@
+# Complete GUI + native H2 runtime. Versions from the tested project environment.
+-r gui/requirements.txt
+numpy==2.4.6
+pandas==3.0.5
+scipy==1.17.1
+matplotlib==3.9.4
+gurobipy==13.0.3
+pvlib==0.15.2
+windpowerlib==0.2.2
+xarray==2026.7.0
+openpyxl==3.1.5
+pycountry==26.2.16
+requests==2.34.2
+pytest==9.1.1
+tzdata

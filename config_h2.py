@@ -15,9 +15,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, fields, is_dataclass, replace
 from enum import Enum
+import calendar
 from math import isfinite
 from pathlib import Path
 from typing import Final, Iterator
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 REPOSITORY_ROOT: Final[Path] = Path(__file__).resolve().parent
@@ -154,6 +156,14 @@ class StudyConfig:
             "Ein Nicht-Schaltjahr mit stündlicher Auflösung.",
         )
     )
+    annual_hours: ScalarParameter = field(
+        default_factory=lambda: ScalarParameter(
+            8_760.0, "h/year", MODEL_DEFINITION_SOURCE,
+            note="Explicit legacy 365-day annualization reference; unchanged for Namibia and short legacy tests.",
+        )
+    )
+    annualization_basis: str = "legacy_365_day_reference"
+    temporal_correlation_timezone: str = "UTC"
     functional_unit_kg_h2: ScalarParameter = field(
         default_factory=lambda: ScalarParameter(
             1.0,
@@ -201,16 +211,33 @@ class StudyConfig:
 
     @property
     def h2_demand_kg_per_year(self) -> float:
-        return self.h2_demand_kg_per_day.value * DAYS_PER_YEAR
+        return self.h2_demand_kg_per_day.value * self.annual_hours.value / HOURS_PER_DAY
 
     def validate(self) -> None:
+        try:
+            if not isinstance(self.temporal_correlation_timezone, str):
+                raise ValueError("temporal_correlation_timezone muss eine IANA-Zeitzone sein.")
+            ZoneInfo(self.temporal_correlation_timezone)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError("temporal_correlation_timezone muss eine gültige IANA-Zeitzone sein.") from exc
         if self.h2_demand_kg_per_day.value <= 0.0:
             raise ValueError("Die H2-Nachfrage muss positiv sein.")
         if self.time_step_hours.value <= 0.0:
             raise ValueError("Die Zeitschrittlänge muss positiv sein.")
         expected_hours = self.time_step_hours.value * self.number_of_time_steps.value
-        if expected_hours != HOURS_PER_YEAR:
-            raise ValueError("Der Basisfall muss genau 8.760 Stunden abdecken.")
+        if self.annualization_basis == "legacy_365_day_reference":
+            reference_hours = HOURS_PER_YEAR
+        elif self.annualization_basis == "historical_calendar_year":
+            year = self.profile_calendar_year.value
+            if isinstance(year, bool) or not isfinite(year) or not float(year).is_integer() or not 1900 <= year <= 2199:
+                raise ValueError("Historische Annualisierung benötigt ein gültiges Kalenderjahr.")
+            reference_hours = 24.0 * (366 if calendar.isleap(int(year)) else 365)
+        else:
+            raise ValueError("Unbekannte annualization_basis.")
+        if self.annual_hours.value != reference_hours:
+            raise ValueError("annual_hours widerspricht der expliziten Annualisierungsbasis.")
+        if expected_hours != reference_hours:
+            raise ValueError("Zeitschritte müssen die explizite Jahresstundenbasis abdecken.")
         if self.functional_unit_kg_h2.value != 1.0:
             raise ValueError("Die funktionelle Einheit muss 1 kg H2 betragen.")
         if self.delivery_pressure_bar.value <= 0.0:

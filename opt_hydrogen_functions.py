@@ -8,8 +8,9 @@ Stromzuordnung; weitere RED-III-Kriterien, Stapelläufe und Ergebnisgrafiken
 folgen getrennt.
 
 Kurze Testzeiträume werden als zyklisch wiederkehrende Perioden behandelt.
-Variable Kosten, Emissionen und H2-Mengen werden deshalb mit dem Verhältnis
-von 8.760 Stunden zur Länge der Testperiode auf ein Jahr hochgerechnet.
+Variable Kosten, Emissionen und H2-Mengen werden mit der expliziten
+Jahresstundenbasis zur Länge der Testperiode annualisiert: legacy 8.760,
+für ein historisches Schaltjahr 8.784 Stunden.
 """
 
 from __future__ import annotations
@@ -23,8 +24,13 @@ import numpy as np
 import pandas as pd
 from gurobipy import GRB
 
-from config_h2 import DEFAULT_CONFIG, HOURS_PER_YEAR, ModelConfig, Scenario
-from h2_input_data import validate_hourly_input
+from config_h2 import DEFAULT_CONFIG, ModelConfig, Scenario
+from h2_input_data import (
+    COMPLETE_EMISSIONS_REPORTING,
+    REGULATORY_EMISSION_COLUMN,
+    REGULATORY_ONLY_EMISSION_MODE,
+    validate_hourly_input,
+)
 from red_iii_data import (
     DEFAULT_RED_III_PARAMETERS,
     EligibilityEvidence,
@@ -61,12 +67,17 @@ class HydrogenOptimizationResult:
     runtime_seconds: float
     optimality_gap_fraction: float
     annualization_factor: float
+    annual_hours: float
+    modeled_hours: float
+    annualization_basis: str
     objective_eur_per_year: float
     lcoh_eur_per_kg_h2: float
     annual_h2_delivered_kg: float
     annual_h2_produced_kg: float
-    annual_grid_emissions_kg_co2e: float
-    operational_emission_intensity_kg_co2e_per_kg_h2: float
+    annual_grid_emissions_kg_co2e: float | None
+    operational_emission_intensity_kg_co2e_per_kg_h2: float | None
+    emissions_reporting: str
+    operational_emissions_status: str
     annual_regulatory_non_renewable_electricity_mwh: float
     annual_regulatory_emissions_kg_co2e: float
     regulatory_emission_intensity_kg_co2e_per_kg_h2: float
@@ -127,6 +138,8 @@ def optimize_hydrogen_system(
     allow_grid_import: bool | None = None,
     solver_output: bool = False,
     solver_backend: str = "auto",
+    require_separate_emission_factors: bool = False,
+    emissions_reporting: str = COMPLETE_EMISSIONS_REPORTING,
 ) -> HydrogenOptimizationResult:
     """Dimensioniere und betreibe das H2-System kostenminimal.
 
@@ -145,11 +158,26 @@ def optimize_hydrogen_system(
     if config.study.time_step_hours.value != 1.0:
         raise ValueError("Der aktuelle Basiskern erwartet stündliche Zeitschritte.")
 
-    data = validate_hourly_input(hourly_input)
+    data = validate_hourly_input(
+        hourly_input,
+        require_separate_emission_factors=require_separate_emission_factors,
+        emissions_reporting=emissions_reporting,
+    )
     number_of_hours = len(data)
     time_step_hours = config.study.time_step_hours.value
     modeled_hours = number_of_hours * time_step_hours
-    annualization_factor = HOURS_PER_YEAR / modeled_hours
+    if modeled_hours > config.study.annual_hours.value:
+        raise ValueError("Der Modellzeitraum überschreitet die explizite Jahresstundenbasis; Schaltjahre benötigen eine historische Kalenderkonfiguration.")
+    annualization_factor = config.study.annual_hours.value / modeled_hours
+    data.attrs["temporal_correlation_timezone"] = config.study.temporal_correlation_timezone
+    site_context = data.attrs.get("eu_site_configuration")
+    if isinstance(site_context, dict):
+        selected = site_context.get("annualization", {})
+        if (selected.get("annual_hours") != config.study.annual_hours.value
+                or selected.get("basis") != config.study.annualization_basis):
+            raise ValueError("EU-Standortvertrag und Modell-Annualisierungsbasis widersprechen sich.")
+        if site_context.get("calendar_timezone") != config.study.temporal_correlation_timezone:
+            raise ValueError("EU-Standortvertrag und Monatskorrelationszeitzone widersprechen sich.")
 
     if selected_solver == "scipy_highs":
         return _optimize_hydrogen_system_scipy(
@@ -365,7 +393,7 @@ def optimize_hydrogen_system(
     objective_eur_per_year = _clean_number(model.ObjVal)
     lcoh_eur_per_kg_h2 = objective_eur_per_year / annual_h2_delivered_kg
 
-    annual_grid_emissions = float(
+    annual_grid_emissions = None if emissions_reporting == REGULATORY_ONLY_EMISSION_MODE else float(
         sum(
             grid_import_mwh[hour].X
             * data["grid_emission_factor"].iloc[hour]
@@ -434,14 +462,19 @@ def optimize_hydrogen_system(
         runtime_seconds=float(model.Runtime),
         optimality_gap_fraction=optimality_gap_fraction,
         annualization_factor=float(annualization_factor),
+        annual_hours=float(config.study.annual_hours.value),
+        modeled_hours=float(modeled_hours),
+        annualization_basis=config.study.annualization_basis,
         objective_eur_per_year=objective_eur_per_year,
         lcoh_eur_per_kg_h2=float(lcoh_eur_per_kg_h2),
         annual_h2_delivered_kg=annual_h2_delivered_kg,
         annual_h2_produced_kg=annual_h2_produced_kg,
-        annual_grid_emissions_kg_co2e=_clean_number(annual_grid_emissions),
-        operational_emission_intensity_kg_co2e_per_kg_h2=float(
+        annual_grid_emissions_kg_co2e=None if annual_grid_emissions is None else _clean_number(annual_grid_emissions),
+        operational_emission_intensity_kg_co2e_per_kg_h2=None if annual_grid_emissions is None else float(
             annual_grid_emissions / annual_h2_delivered_kg
         ),
+        emissions_reporting=data.attrs["emissions_reporting"],
+        operational_emissions_status=data.attrs["operational_emissions_status"],
         annual_regulatory_non_renewable_electricity_mwh=emission_diagnostics[
             "annual_regulatory_non_renewable_electricity_mwh"
         ],
@@ -540,7 +573,8 @@ def _optimize_hydrogen_system_scipy(
 
     number_of_hours = len(data)
     time_step_hours = config.study.time_step_hours.value
-    annualization_factor = HOURS_PER_YEAR / (number_of_hours * time_step_hours)
+    modeled_hours = number_of_hours * time_step_hours
+    annualization_factor = config.study.annual_hours.value / modeled_hours
     technology = config.technologies
     pv = technology.pv
     wind = technology.wind_onshore
@@ -833,7 +867,7 @@ def _optimize_hydrogen_system_scipy(
     objective_eur_per_year = _clean_number(float(solution.fun))
     annual_h2_delivered_kg = float(h2_demand.sum() * annualization_factor)
     annual_h2_produced_kg = float(h2_production.sum() * annualization_factor)
-    annual_grid_emissions = float(
+    annual_grid_emissions = None if data.attrs["emissions_reporting"] == REGULATORY_ONLY_EMISSION_MODE else float(
         np.dot(grid_import, data["grid_emission_factor"].to_numpy(dtype=float))
         * annualization_factor
     )
@@ -881,14 +915,19 @@ def _optimize_hydrogen_system_scipy(
         runtime_seconds=float(runtime_seconds),
         optimality_gap_fraction=0.0,
         annualization_factor=float(annualization_factor),
+        annual_hours=float(config.study.annual_hours.value),
+        modeled_hours=float(modeled_hours),
+        annualization_basis=config.study.annualization_basis,
         objective_eur_per_year=objective_eur_per_year,
         lcoh_eur_per_kg_h2=float(objective_eur_per_year / annual_h2_delivered_kg),
         annual_h2_delivered_kg=annual_h2_delivered_kg,
         annual_h2_produced_kg=annual_h2_produced_kg,
-        annual_grid_emissions_kg_co2e=_clean_number(annual_grid_emissions),
-        operational_emission_intensity_kg_co2e_per_kg_h2=float(
+        annual_grid_emissions_kg_co2e=None if annual_grid_emissions is None else _clean_number(annual_grid_emissions),
+        operational_emission_intensity_kg_co2e_per_kg_h2=None if annual_grid_emissions is None else float(
             annual_grid_emissions / annual_h2_delivered_kg
         ),
+        emissions_reporting=data.attrs["emissions_reporting"],
+        operational_emissions_status=data.attrs["operational_emissions_status"],
         annual_regulatory_non_renewable_electricity_mwh=emission_diagnostics[
             "annual_regulatory_non_renewable_electricity_mwh"
         ],
@@ -1192,15 +1231,24 @@ def _build_hourly_result(
             "electricity_price_eur_per_mwh": data[
                 "electricity_price"
             ].to_numpy(dtype=float),
-            "grid_emission_factor_kg_co2e_per_mwh": data[
-                "grid_emission_factor"
+            "regulatory_grid_emission_factor_kg_co2e_per_mwh": data[
+                REGULATORY_EMISSION_COLUMN
+                if REGULATORY_EMISSION_COLUMN in data.columns
+                else "grid_emission_factor"
             ].to_numpy(dtype=float),
         }
     )
+    if "grid_emission_factor" in data.columns:
+        result["grid_emission_factor_kg_co2e_per_mwh"] = data["grid_emission_factor"].to_numpy(dtype=float)
     numeric_columns = result.select_dtypes(include=[np.number]).columns
     result[numeric_columns] = result[numeric_columns].map(_clean_number)
     result.attrs["time_zone"] = "UTC"
     result.attrs["frequency"] = "1h"
+    result.attrs["temporal_correlation_timezone"] = data.attrs["temporal_correlation_timezone"]
+    result.attrs["emission_factor_mode"] = data.attrs["emission_factor_mode"]
+    result.attrs["emission_factor_sources"] = data.attrs.get("emission_factor_sources", {})
+    result.attrs["emissions_reporting"] = data.attrs["emissions_reporting"]
+    result.attrs["operational_emissions_status"] = data.attrs["operational_emissions_status"]
     return result
 
 
@@ -1213,13 +1261,14 @@ def _add_regulatory_emission_columns(
     Im allgemeinen Art.-4(4)-Pfad erhält zeitlich zugeordneter erneuerbarer
     Strom gemäß Delegierter Verordnung (EU) 2023/1185 einen Emissionsfaktor
     von null. Nur eine innerhalb des Korrelationsfensters ungedeckte
-    RFNBO-Strommenge wird mit dem stündlichen Netzfaktor bewertet.
+    RFNBO-Strommenge wird mit dem eigenständig dokumentierten regulatorischen
+    Netzfaktor bewertet. Legacy-Eingaben teilen ausdrücklich denselben Faktor.
     """
 
     result = hourly_operation.copy()
     grid_import = result["grid_import_mwh"].to_numpy(dtype=float)
-    emission_factor = result[
-        "grid_emission_factor_kg_co2e_per_mwh"
+    regulatory_factor = result[
+        "regulatory_grid_emission_factor_kg_co2e_per_mwh"
     ].to_numpy(dtype=float)
     rf_nbo_electricity = result["rf_nbo_electricity_mwh"].to_numpy(dtype=float)
     regulatory_non_renewable = np.zeros(len(result), dtype=float)
@@ -1232,7 +1281,8 @@ def _add_regulatory_emission_columns(
             if scenario is Scenario.RED_MONTHLY
             else TemporalCorrelation.HOURLY
         )
-        periods = build_correlation_periods(result["timestamp"], temporal_mode)
+        periods = build_correlation_periods(result["timestamp"], temporal_mode,
+            calendar_timezone=result.attrs.get("temporal_correlation_timezone", "UTC"))
         eligible = result[
             "eligible_renewable_electricity_mwh"
         ].to_numpy(dtype=float)
@@ -1260,9 +1310,12 @@ def _add_regulatory_emission_columns(
                 grid_import[indices] * deficit / period_grid_import
             )
 
-    result["operational_grid_emissions_kg_co2e"] = (
-        grid_import * emission_factor
-    )
+    if "grid_emission_factor_kg_co2e_per_mwh" in result.columns:
+        result["operational_grid_emissions_kg_co2e"] = (
+            grid_import * result["grid_emission_factor_kg_co2e_per_mwh"].to_numpy(dtype=float)
+        )
+    elif result.attrs.get("emissions_reporting") != REGULATORY_ONLY_EMISSION_MODE:
+        raise HydrogenOptimizationError("Operativer Faktor fehlt außerhalb des expliziten regulatory_only-Modus.")
     result["regulatory_non_renewable_electricity_mwh"] = (
         regulatory_non_renewable
     )
@@ -1270,7 +1323,7 @@ def _add_regulatory_emission_columns(
         0.0, rf_nbo_electricity - regulatory_non_renewable
     )
     result["regulatory_emissions_kg_co2e"] = (
-        regulatory_non_renewable * emission_factor
+        regulatory_non_renewable * regulatory_factor
     )
     numeric_columns = result.select_dtypes(include=[np.number]).columns
     result[numeric_columns] = result[numeric_columns].map(_clean_number)
@@ -1322,10 +1375,11 @@ def _calculate_regulatory_emission_diagnostics(
 
 
 def _monthly_hour_groups(data: pd.DataFrame) -> list[tuple[str, list[int]]]:
-    """Ordne jede Modellstunde genau einem UTC-Kalendermonat zu."""
+    """Ordne jede physische Stunde dem explizit konfigurierten Ortsmonat zu."""
 
     periods = build_correlation_periods(
-        data["timestamp"], TemporalCorrelation.MONTHLY
+        data["timestamp"], TemporalCorrelation.MONTHLY,
+        calendar_timezone=data.attrs.get("temporal_correlation_timezone", "UTC"),
     )
     groups: list[tuple[str, list[int]]] = []
     for period in periods.drop_duplicates().tolist():
@@ -1358,6 +1412,7 @@ def _calculate_red_temporal_diagnostics(
     check = assess_red_iii_compliance(
         operation_from_optimizer_output(hourly_operation),
         temporal_mode=temporal_mode,
+        calendar_timezone=hourly_operation.attrs.get("temporal_correlation_timezone", "UTC"),
         evidence=EligibilityEvidence(
             additionality_verified=True,
             geographical_correlation_verified=True,

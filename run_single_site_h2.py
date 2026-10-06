@@ -26,7 +26,15 @@ import pandas as pd
 import scipy
 
 from config_h2 import DEFAULT_CONFIG, ModelConfig, Scenario, iter_scalar_parameters
-from h2_input_data import HourlyInputError, validate_hourly_input
+from eu_site_configuration import EU_SITE_IDS, load_eu_site_configuration
+from h2_input_data import (
+    LEGACY_EMISSION_MODE,
+    COMPLETE_EMISSIONS_REPORTING,
+    REGULATORY_ONLY_EMISSION_MODE,
+    SEPARATE_EMISSION_MODE,
+    HourlyInputError,
+    validate_hourly_input,
+)
 from opt_hydrogen_functions import (
     HydrogenOptimizationError,
     HydrogenOptimizationResult,
@@ -77,12 +85,46 @@ def run_single_site_h2(
     overwrite: bool = False,
     solver_output: bool = False,
     solver_backend: str = "auto",
+    emission_factor_metadata_path: str | Path | None = None,
+    require_separate_emission_factors: bool = False,
+    emissions_reporting: str = COMPLETE_EMISSIONS_REPORTING,
+    eu_site: str | None = None,
+    eu_design_path: str | Path | None = None,
+    sensitivity_override: dict | None = None,
 ) -> RunArtifacts:
     """Führe einen Modelllauf aus und schreibe seine vier Ergebnisdateien."""
 
     if not isinstance(overwrite, bool):
         raise TypeError("overwrite muss ein boolescher Wert sein.")
     selected_scenario = _coerce_scenario(scenario)
+    selected_eu_site = None
+    if eu_site is not None:
+        selected_eu_site = load_eu_site_configuration(eu_site, base_config=config, design_path=eu_design_path)
+        config = selected_eu_site.config
+    elif eu_design_path is not None:
+        raise H2RunError("eu_design_path benötigt eine explizite eu_site-Auswahl.")
+    baseline_config = config
+    override_record = None
+    if sensitivity_override is not None:
+        from h2_sensitivity_overrides import apply_sensitivity_override
+        config, override_record = apply_sensitivity_override(config, sensitivity_override)
+        if selected_eu_site is not None:
+            from copy import deepcopy
+            site_metadata = deepcopy(selected_eu_site.metadata)
+            wacc = site_metadata["wacc"]
+            wacc["baseline_real_wacc_fraction_per_year"] = dict(wacc["real_wacc_fraction_per_year"])
+            wacc["real_wacc_fraction_per_year"] = {name: getattr(config.technologies, name).real_wacc_fraction.value
+                for name in ("pv", "wind_onshore", "electrolyzer", "compressor", "h2_storage")}
+            wacc["effective_rates_are_sensitivity_assumptions"] = override_record["parameter"] in ("real_wacc_shift_fraction", "real_wacc_multiplier", "uniform_real_wacc_fraction")
+            site_metadata["sensitivity_override"] = override_record
+            if override_record["parameter"] == "h2_demand_multiplier":
+                annualization = site_metadata["annualization"]
+                original_target = annualization["annual_h2_delivery_kg"]
+                annualization.update(baseline_annual_h2_delivery_kg=original_target,
+                    annual_h2_delivery_kg=original_target * override_record["value"],
+                    demand_multiplier=override_record["value"],
+                    effective_delivery_is_sensitivity_assumption=True)
+            selected_eu_site = replace(selected_eu_site, config=config, metadata=site_metadata)
 
     source_path = Path(input_path).expanduser().resolve()
     if not source_path.exists():
@@ -93,13 +135,32 @@ def run_single_site_h2(
         raise H2RunError(f"Der Eingabepfad ist keine Datei: {source_path}")
 
     try:
-        raw_input = pd.read_csv(source_path)
+        raw_input = pd.read_csv(source_path, dtype=str, keep_default_na=False)
     except (pd.errors.ParserError, UnicodeDecodeError) as exc:
         raise H2RunError(
             f"Die CSV-Eingabedatei konnte nicht gelesen werden: {source_path}"
         ) from exc
-    validated_input = validate_hourly_input(raw_input)
     input_sha256 = _sha256(source_path)
+    if emission_factor_metadata_path is not None:
+        _load_emission_factor_metadata(
+            raw_input, Path(emission_factor_metadata_path), input_sha256
+        )
+    if selected_eu_site is not None:
+        _require_eu_input_context_matches(raw_input, selected_eu_site.metadata)
+        raw_input.attrs["eu_site_configuration"] = selected_eu_site.metadata
+    if raw_input.attrs.get("sensitivity_provenance") is not None:
+        from h2_sensitivity_overrides import verify_case_provenance
+        verify_case_provenance(raw_input, override_record, baseline_config=baseline_config)
+    elif override_record is not None and (selected_eu_site is not None or override_record["parameter"] == "h2_demand_multiplier"):
+        raise H2RunError("EU sensitivity_override benötigt einen abgeleiteten SHA-gebundenen Quellenvertrag.")
+    if override_record is not None:
+        raw_input.attrs["sensitivity_override"] = override_record
+    raw_input.attrs["temporal_correlation_timezone"] = config.study.temporal_correlation_timezone
+    validated_input = validate_hourly_input(
+        raw_input,
+        require_separate_emission_factors=require_separate_emission_factors,
+        emissions_reporting=emissions_reporting,
+    )
 
     run_config = replace(config, scenario=selected_scenario)
     run_config.validate()
@@ -108,6 +169,8 @@ def run_single_site_h2(
         config=run_config,
         solver_output=solver_output,
         solver_backend=solver_backend,
+        require_separate_emission_factors=require_separate_emission_factors,
+        emissions_reporting=emissions_reporting,
     )
 
     output_paths = _prepare_output_paths(
@@ -146,6 +209,82 @@ def run_single_site_h2(
         metadata_path=output_paths[RUN_METADATA_FILENAME],
         result=result,
     )
+
+
+def _load_emission_factor_metadata(
+    data: pd.DataFrame, path: Path, input_sha256: str
+) -> None:
+    """Load a factor contract bound to the exact CSV bytes, before optimization.
+
+    The JSON requires ``schema_version='1.0'``, ``input_sha256``,
+    ``emission_factor_mode='explicit_separate_factors'`` or
+    ``emission_factor_mode='regulatory_only'`` and
+    ``emission_factor_sources`` as documented in ``validate_hourly_input``.
+    It does not select or invent regulatory factors from a country name.
+    """
+    source = path.expanduser().resolve()
+    try:
+        metadata = json.loads(source.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise H2RunError("Emissionsfaktor-Metadaten sind keine gültige JSON-Datei.") from exc
+    if not isinstance(metadata, dict) or metadata.get("schema_version") != "1.0":
+        raise H2RunError("Emissionsfaktor-Metadaten benötigen schema_version 1.0.")
+    if metadata.get("input_sha256") != input_sha256:
+        raise H2RunError("Der Hash der Emissionsfaktor-Metadaten passt nicht zur Eingabe.")
+    if metadata.get("emission_factor_mode") not in (SEPARATE_EMISSION_MODE, REGULATORY_ONLY_EMISSION_MODE):
+        raise H2RunError("Emissionsfaktor-Metadaten müssen getrennte Faktoren oder regulatory_only deklarieren.")
+    data.attrs["emission_factor_mode"] = metadata["emission_factor_mode"]
+    data.attrs["emission_factor_sources"] = metadata.get("emission_factor_sources")
+    data.attrs["emission_factor_metadata"] = {
+        "source_path": str(source), "sha256": _sha256(source)
+    }
+    if "parent_input" in metadata or "case_transformation" in metadata:
+        if not isinstance(metadata.get("parent_input"), dict) or not isinstance(metadata.get("case_transformation"), dict):
+            raise H2RunError("Abgeleiteter Quellenvertrag benötigt parent_input und case_transformation.")
+        data.attrs["sensitivity_provenance"] = {
+            "parent_input": metadata["parent_input"], "case_transformation": metadata["case_transformation"],
+            "baseline_configuration": metadata.get("baseline_configuration")}
+    context = {key: metadata[key] for key in (
+        "site_id", "country_code", "calendar_timezone", "historical_year", "price_year",
+        "annualization_basis", "annual_hours", "expected_hours", "demand_profile",
+    ) if key in metadata}
+    for key in ("site_id", "country_code", "calendar_timezone"):
+        if key in context and (not isinstance(context[key], str) or not context[key].strip()):
+            raise H2RunError(f"Der Quellenvertrag benötigt einen gültigen {key}.")
+    for key in ("historical_year", "price_year"):
+        if key in context and (isinstance(context[key], bool) or not isinstance(context[key], int) or not 1900 <= context[key] <= 2100):
+            raise H2RunError(f"Der Quellenvertrag benötigt ein gültiges ganzzahliges {key}.")
+    for key in ("annual_hours", "expected_hours"):
+        if key in context and (type(context[key]) is not int or context[key] not in (8760,8784)):
+            raise H2RunError(f"Der Quellenvertrag benötigt gültige {key}.")
+    if "expected_hours" in context and len(data) != context["expected_hours"]:
+        raise H2RunError("CSV-Stundenanzahl widerspricht expected_hours des Quellenvertrags.")
+    if "annualization_basis" in context and context["annualization_basis"] not in ("historical_calendar_year","legacy_365_day_reference"):
+        raise H2RunError("Unbekannte Quellenvertrag-Annualisierungsbasis.")
+    if "demand_profile" in context and not isinstance(context["demand_profile"],dict):
+        raise H2RunError("demand_profile muss ein dokumentiertes Profilobjekt sein.")
+    data.attrs["declared_input_context"] = context
+
+
+def _require_eu_input_context_matches(data: pd.DataFrame, site_metadata: dict) -> None:
+    """Reject declared source/site contradictions without inferring a CSV year."""
+    expected = {
+        "site_id": site_metadata["site_id"],
+        "country_code": site_metadata["country_code"],
+        "calendar_timezone": site_metadata["calendar_timezone"],
+        "historical_year": site_metadata["historical_year"],
+        "price_year": site_metadata["wacc"]["cost_price_year"],
+        "annualization_basis": site_metadata["annualization"]["basis"],
+        "annual_hours": site_metadata["annualization"]["annual_hours"],
+        "expected_hours": site_metadata["time_contract"]["expected_hours"],
+    }
+    for key, value in data.attrs.get("declared_input_context", {}).items():
+        if key == "demand_profile":
+            if value.get("annual_kg") != site_metadata["annualization"]["annual_h2_delivery_kg"]:
+                raise H2RunError("Quellenvertrag demand_profile.annual_kg widerspricht der festen EU-Jahreslieferung.")
+            continue
+        if value != expected[key]:
+            raise H2RunError(f"Quellenvertrag {key}={value!r} widerspricht --eu-site: erwartet {expected[key]!r}.")
 
 
 def _coerce_scenario(scenario: Scenario | str) -> Scenario:
@@ -213,9 +352,15 @@ def _build_summary(
         "input_file": str(source_path),
         "input_sha256": input_sha256,
         "number_of_hours": len(validated_input),
+        "emission_factor_mode": validated_input.attrs["emission_factor_mode"],
+        "emissions_reporting": result.emissions_reporting,
+        "operational_emissions_status": result.operational_emissions_status,
         "start_timestamp_utc": validated_input["timestamp"].iloc[0].isoformat(),
         "end_timestamp_utc": validated_input["timestamp"].iloc[-1].isoformat(),
         "annualization_factor": result.annualization_factor,
+        "annual_hours": result.annual_hours,
+        "modeled_hours": result.modeled_hours,
+        "annualization_basis": result.annualization_basis,
         "objective_eur_per_year": result.objective_eur_per_year,
         "lcoh_eur_per_kg_h2": result.lcoh_eur_per_kg_h2,
         "annual_h2_delivered_kg": result.annual_h2_delivered_kg,
@@ -287,7 +432,9 @@ def _build_metadata(
     }
     gurobi_version = ".".join(str(part) for part in gp.gurobi.version())
     return {
-        "schema_version": "1.3",
+        "schema_version": "1.7",
+        **({"sensitivity_override": validated_input.attrs["sensitivity_override"]}
+           if "sensitivity_override" in validated_input.attrs else {}),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "scenario": config.scenario.value,
         "input": {
@@ -298,6 +445,41 @@ def _build_metadata(
             "end_timestamp_utc": validated_input["timestamp"].iloc[-1].isoformat(),
             "time_zone": "UTC",
             "frequency": "1h",
+            "emission_factor_mode": validated_input.attrs["emission_factor_mode"],
+            "emissions_reporting": result.emissions_reporting,
+            "emission_factor_sources": validated_input.attrs.get("emission_factor_sources", {}),
+            "emission_factor_metadata": validated_input.attrs.get("emission_factor_metadata"),
+            "legacy_shared_factor": (
+                validated_input.attrs["emission_factor_mode"] == LEGACY_EMISSION_MODE
+            ),
+            "eu_site_configuration": validated_input.attrs.get("eu_site_configuration"),
+            "declared_input_context": validated_input.attrs.get("declared_input_context", {}),
+            **({"sensitivity_provenance": validated_input.attrs["sensitivity_provenance"]}
+               if "sensitivity_provenance" in validated_input.attrs else {}),
+            **validated_input.attrs.get("declared_input_context", {}),
+        },
+        "calendar_scope": {
+            "annualization": {
+                "basis": result.annualization_basis,
+                "reference_year": (int(config.study.profile_calendar_year.value)
+                                   if result.annualization_basis == "historical_calendar_year" else None),
+                "annual_hours": result.annual_hours,
+                "modeled_hours": result.modeled_hours,
+                "time_step_hours": config.study.time_step_hours.value,
+                "factor": result.annualization_factor,
+                "period_interpretation": ("complete_historical_calendar_year"
+                    if result.annualization_basis == "historical_calendar_year" and result.modeled_hours == result.annual_hours
+                    else "cyclic_period_reference_annualization"),
+            },
+            "requested_site_timezone": (validated_input.attrs.get("eu_site_configuration") or {}).get("calendar_timezone"),
+            "monthly_correlation_calendar": config.study.temporal_correlation_timezone,
+            "monthly_grouping_basis": ("utc_calendar_month" if config.study.temporal_correlation_timezone == "UTC"
+                                       else "site_local_calendar_month"),
+            "hourly_grouping_basis": "physical_utc_hour",
+            "site_timezone_applied_to_monthly_correlation": (
+                validated_input.attrs.get("eu_site_configuration") is not None
+                and config.study.temporal_correlation_timezone != "UTC"),
+            "note": "S1 korreliert die gesamte Elektrolyse- und Kompressorstrommenge je konfiguriertem Kalender-Monat; S2 prüft jede physische UTC-Stunde separat.",
         },
         "software": {
             "python": sys.version.split()[0],
@@ -306,6 +488,8 @@ def _build_metadata(
             "gurobi": gurobi_version,
         },
         "result": {
+            "emissions_reporting": result.emissions_reporting,
+            "operational_emissions_status": result.operational_emissions_status,
             "solver_status": result.solver_status,
             "solver_name": result.solver_name,
             "solver_runtime_seconds": result.runtime_seconds,
@@ -313,6 +497,7 @@ def _build_metadata(
             "objective_eur_per_year": result.objective_eur_per_year,
             "lcoh_eur_per_kg_h2": result.lcoh_eur_per_kg_h2,
             "emissions": {
+                "factor_mode": validated_input.attrs["emission_factor_mode"],
                 "operational_grid_emissions_kg_co2e_per_year": (
                     result.annual_grid_emissions_kg_co2e
                 ),
@@ -342,8 +527,14 @@ def _build_metadata(
                     result.red_iii_maximum_product_intensity_g_co2e_per_mj
                 ),
                 "scope_note": (
-                    "Die operative Bilanz bewertet jeden physischen Netzbezug "
-                    "mit dem stündlichen Netzfaktor. Die regulatorische Bilanz "
+                    ("Betriebliche Stromemissionen werden im expliziten regulatory_only-Modus nicht bewertet; "
+                     "fehlende Faktoren und Kennzahlen werden nicht durch null ersetzt. "
+                     if result.emissions_reporting == REGULATORY_ONLY_EMISSION_MODE else
+                     "Die operative Bilanz bewertet jeden physischen Netzbezug "
+                     "mit grid_emission_factor. ")
+                    + "Die regulatorische Bilanz nutzt "
+                    "regulatory_grid_emission_factor; Legacy-Eingaben verwenden "
+                    "ausdrücklich denselben Faktor für beide Bilanzen. Sie "
                     "bewertet zeitlich zugeordneten erneuerbaren Strom im "
                     "allgemeinen Art.-4(4)-Pfad mit null. Berücksichtigt werden "
                     "nur Stromemissionen bis zur H2-Bereitstellung; Herstellung "
@@ -365,6 +556,9 @@ def _build_metadata(
             },
             "red_iii_temporal_check": {
                 "mode": result.red_iii_temporal_mode,
+                "calendar_timezone": config.study.temporal_correlation_timezone,
+                "grouping_basis": ("physical_utc_hour" if result.red_iii_temporal_mode == "hourly"
+                                   else "calendar_month" if result.red_iii_temporal_mode == "monthly" else None),
                 "compliant": result.red_iii_temporal_compliant,
                 "number_of_correlation_periods": (
                     result.red_iii_correlation_periods
@@ -382,6 +576,7 @@ def _build_metadata(
             },
         },
         "model_parameters": parameters,
+        "model_calendar": {"temporal_correlation_timezone": config.study.temporal_correlation_timezone},
         "output_files": {
             "validated_input": VALIDATED_INPUT_FILENAME,
             "summary": SUMMARY_FILENAME,
@@ -461,6 +656,24 @@ def build_argument_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--emission-factor-metadata",
+        type=Path,
+        help="JSON-Quellenvertrag für separate/regulatory-only Faktoren, gebunden an den CSV-SHA256.",
+    )
+    parser.add_argument(
+        "--emissions-reporting",
+        choices=("complete", "regulatory-only"),
+        default="complete",
+        help="complete benötigt den betrieblichen Faktor; regulatory-only berechnet ausschließlich die regulatorische THG-Bilanz ohne operative Ersatzwerte.",
+    )
+    parser.add_argument("--eu-site", choices=EU_SITE_IDS, help="Aktiviert die dokumentierten historischen EU-Standort- und Technologie-WACC-Werte.")
+    parser.add_argument("--eu-design", type=Path, help="Optionaler expliziter EU-Entwurfs-JSON-Pfad für --eu-site.")
+    parser.add_argument(
+        "--require-separate-emission-factors",
+        action="store_true",
+        help="Verlangt vor dem Solve unabhängig dokumentierte operative/regulatorische Faktoren.",
+    )
+    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Ersetzt vorhandene Ergebnisdateien mit denselben vier Namen.",
@@ -492,6 +705,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             overwrite=args.overwrite,
             solver_output=args.solver_output,
             solver_backend=args.solver,
+            emission_factor_metadata_path=args.emission_factor_metadata,
+            require_separate_emission_factors=args.require_separate_emission_factors,
+            emissions_reporting=args.emissions_reporting.replace("-", "_"),
+            eu_site=args.eu_site,
+            eu_design_path=args.eu_design,
         )
     except (
         FileNotFoundError,

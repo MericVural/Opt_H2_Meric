@@ -64,7 +64,7 @@ def test_one_call_writes_three_separate_reproducible_scenarios(
         assert (scenario_directory / "run_metadata.json").is_file()
 
     metadata = json.loads(artifacts.metadata_path.read_text(encoding="utf-8"))
-    assert metadata["schema_version"] == "1.0"
+    assert metadata["schema_version"] == "1.4"
     assert metadata["input"]["sha256"] == expected_hash
     assert [entry["scenario_id"] for entry in metadata["scenarios"]] == [
         "S0",

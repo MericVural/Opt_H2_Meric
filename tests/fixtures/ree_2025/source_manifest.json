@@ -1,0 +1,26 @@
+[
+  {
+    "file": "ree_demandaau_2025-03-30.jsonp",
+    "retrieved_utc": "2026-10-02T23:29:12.6730818Z",
+    "url": "https://demanda.ree.es/WSvisionaMovilesPeninsulaRest/resources/demandaGeneracionPeninsula?callback=sample&curva=DEMANDAAU&fecha=2025-03-30",
+    "sha256": "bb8c1ef9c67bfd93749cfd6c68daf298e87efb9225fcfe3b71c50fa8353cc902"
+  },
+  {
+    "file": "ree_demandaau_2025-04-28.jsonp",
+    "retrieved_utc": "2026-10-02T23:29:14.1707868Z",
+    "url": "https://demanda.ree.es/WSvisionaMovilesPeninsulaRest/resources/demandaGeneracionPeninsula?callback=sample&curva=DEMANDAAU&fecha=2025-04-28",
+    "sha256": "a21e7c4556e81b216840df419faf27be49339e92c7c989f73be3e7b05912c6ac"
+  },
+  {
+    "file": "ree_demandaau_2025-10-26.jsonp",
+    "retrieved_utc": "2026-10-02T23:29:15.1755349Z",
+    "url": "https://demanda.ree.es/WSvisionaMovilesPeninsulaRest/resources/demandaGeneracionPeninsula?callback=sample&curva=DEMANDAAU&fecha=2025-10-26",
+    "sha256": "2d13b6b96ad18ebb7d9afdc9e0a3c4b675973a5e1bdb6645c33ce91d1c720658"
+  },
+  {
+    "file": "redata_prices_2025-10-26.json",
+    "retrieved_utc": "2026-10-02T23:29:16.5283595Z",
+    "url": "https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real?start_date=2025-10-26T00:00&end_date=2025-10-26T23:59&time_trunc=hour",
+    "sha256": "df86b1e70b4900afb25177d925f09de861d4ba7f89f93d239ccba66e61eb5f87"
+  }
+]
