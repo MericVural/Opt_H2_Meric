@@ -5,6 +5,14 @@ standortunabhängigen Kern. Geplante Erweiterungen sind ausdrücklich gekennzeic
 Forschungsfrage und Reihenfolge stehen im [Masterplan](FORSCHUNGSARBEITSPLAN.md);
 konkrete Daten und Ergebnisse stehen in den [Fallstudien](fallstudien/README.md).
 
+**GUI-Stand 12.10.2026:** Die aktive [Forschungswerkstatt U2](GUI_U2_ABNAHME.md)
+ordnet bestehende Untersuchungen nach Forschungsfragen und stellt ihre
+Bezugsfälle sowie Interpretation dar. Modellgleichungen, Systemgrenzen und
+Datenannahmen dieses Dokuments bleiben unverändert. Die Nachfrageansicht
+prüft die Homogenität der dargestellten Neuauslegungen; sie unterstellt keine
+Größendegression. Betriebliche und regulatorische elektrische Emissionen bleiben
+getrennt. Die [Bedienung](GUI_BEDIENUNGSANLEITUNG.md) dokumentiert diese Einordnung.
+
 ## 1. Forschungsansatz und Herkunft
 
 Ein lineares Optimierungsmodell bestimmt gleichzeitig Anlagenkapazitäten und

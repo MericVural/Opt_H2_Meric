@@ -42,6 +42,20 @@ METRICS = {
     "physical_direct_renewable_share": "Direkte EE-Nutzung am Bedarf [Anteil]",
     "annual_curtailment_mwh": "PV-/Wind-Abregelung [MWh/a]",
 }
+# Keep every native field addressable, while ordinary scientific comparisons
+# offer outcomes rather than fixed reference assumptions or solver diagnostics.
+REFERENCE_METRICS = frozenset({
+    "red_iii_maximum_product_intensity_kg_co2e_per_kg_h2",
+    "red_iii_maximum_product_intensity_g_co2e_per_mj",
+})
+DIAGNOSTIC_METRICS = frozenset({
+    "solver_runtime_seconds", "optimality_gap_fraction",
+    "max_electricity_balance_residual_mwh", "max_hydrogen_balance_residual_kg",
+    "annual_cost_balance_residual_eur_per_year", "max_red_iii_temporal_deficit_mwh",
+})
+METRIC_ROLES = {field: ("reference" if field in REFERENCE_METRICS else
+                       "diagnostic" if field in DIAGNOSTIC_METRICS else "result")
+                for field in METRICS}
 PARAMETER_TITLES = {
     "h2_demand_multiplier": "H₂-Jahresnachfrage [% der Basis]",
     "h2_delivery_profile": "H₂-Lieferprofil",
@@ -98,10 +112,18 @@ def case_label_table(frame):
     return pd.DataFrame(rows)
 
 
-def available_metrics(frame):
-    """Known metric names present in saved exports, in the established order."""
+def available_metrics(frame, *, roles=("result",)):
+    """Present native fields of explicit roles; default to scientific outcomes.
+
+    Diagnostics remain available to solver/validation views by requesting
+    ``roles=("diagnostic",)``. Native names and values are never renamed.
+    """
     data = _frame(frame)
-    return {column: label for column, label in METRICS.items() if column in data}
+    roles = (roles,) if isinstance(roles, str) else tuple(roles)
+    if set(roles) - {"result", "reference", "diagnostic"}:
+        raise ValueError("Unbekannte Kennzahlenrolle.")
+    return {column: label for column, label in METRICS.items()
+            if column in data and METRIC_ROLES[column] in roles}
 
 
 def _figure_size(count, *, height=6.0):
@@ -164,6 +186,8 @@ def _require(data, columns):
 
 def _selected_cases(frame, metric):
     data = _frame(frame)
+    if METRIC_ROLES.get(metric) == "reference":
+        raise ValueError("Die THG-Referenz ist eine native Prüfannahme; sie wird in der Emissionsanalyse auf der passenden Intensitätsachse angezeigt.")
     _require(data, [metric])
     if len(data) > MAX_COMPARISON_CASES:
         raise ValueError(f"Für ein lesbares Diagramm höchstens {MAX_COMPARISON_CASES} Fälle auswählen oder eine weitere Seite anzeigen.")
@@ -350,33 +374,66 @@ def cost_components_figure(frame, *, title="LCOH-Kostenbestandteile"):
 def emissions_figure(frame, *, title="Emissionen mit getrennten Bilanzgrenzen"):
     data = _frame(frame)
     _apply_plot_style()
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6.3))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6.8))
     specifications = [("operational_emission_intensity_kg_co2e_per_kg_h2", "Betriebliche Stromteilbilanz"),
         ("regulatory_emission_intensity_kg_co2e_per_kg_h2", "Regulatorische Stromteilbilanz")]
+    reference_field = "red_iii_maximum_product_intensity_kg_co2e_per_kg_h2"
+    other_reference_field = "red_iii_maximum_product_intensity_g_co2e_per_mj"
+    references = (pd.to_numeric(data[reference_field], errors="coerce").to_numpy(dtype=float)
+                  if reference_field in data else np.full(len(data), np.nan))
+    valid_reference = np.isfinite(references) & (references >= 0)
     maxima = []
     for field, _ in specifications:
         if field in data:
-            maxima.extend(pd.to_numeric(data[field], errors="coerce").dropna())
+            values = pd.to_numeric(data[field], errors="coerce").to_numpy(dtype=float)
+            maxima.extend(values[np.isfinite(values)])
+    maxima.extend(references[valid_reference])
     bound = max(max(maxima, default=0), .1)*1.22
+    bottom = min(min(maxima, default=0), 0)*1.12
     for ax, (field, label) in zip(axes, specifications, strict=True):
         if field in data:
-            vals = pd.to_numeric(data[field], errors="coerce").to_numpy()
-            shown = np.where(np.abs(vals) < 1e-10, 0, vals)
-            bars = ax.bar(np.arange(len(data)), shown, color=_colors(data), width=.65)
-            for i, (bar, val) in enumerate(zip(bars, shown, strict=True)):
+            vals = pd.to_numeric(data[field], errors="coerce").to_numpy(dtype=float)
+            bars = ax.bar(np.arange(len(data)), vals, color=_colors(data), width=.65)
+            for i, (bar, val) in enumerate(zip(bars, vals, strict=True)):
                 if np.isfinite(val):
-                    ax.annotate(f"{val:.3f}".replace(".", ","), (bar.get_x()+bar.get_width()/2,val), xytext=(0,5), textcoords="offset points", ha="center", va="bottom", fontsize=9)
+                    displayed = f"{val:.3g}" if val != 0 and abs(val) < .001 else f"{val:.3f}"
+                    ax.annotate(displayed.replace(".", ","), (bar.get_x()+bar.get_width()/2,val), xytext=(0,5), textcoords="offset points", ha="center", va="bottom", fontsize=9)
+                    if val == 0:
+                        ax.plot(i, 0, marker="o", markerfacecolor="white", markeredgecolor=_colors(data)[i],
+                                markersize=6, clip_on=False, zorder=4)
                 else:
                     ax.text(i,.03*bound,"nicht bewertet",rotation=90,ha="center",va="bottom",fontsize=8)
         else:
             ax.text(.5,.5,"Nicht exportiert",ha="center",transform=ax.transAxes)
         _set_categories(ax, np.arange(len(data)), _labels(data))
-        ax.set_ylim(0,bound)
+        ax.set_ylim(bottom,bound)
         ax.set_title(label)
         ax.set_ylabel("kg CO₂e/kg gelieferter H₂")
+    # Native kg/kg references belong only to the regulatory kg/kg axis. Distinct
+    # native references are case-specific segments, never an averaged limit.
+    reference_label = "Native THG-Referenz (Gesamtprodukt)"
+    regulatory = axes[1]
+    if valid_reference.any():
+        if valid_reference.all() and np.all(references == references[0]):
+            regulatory.axhline(references[0], color="#334155", linestyle="--", linewidth=1.25,
+                               label=reference_label)
+        else:
+            for i in np.flatnonzero(valid_reference):
+                regulatory.plot([i-.36, i+.36], [references[i], references[i]], color="#334155",
+                                linestyle="--", linewidth=1.25,
+                                label=reference_label if i == np.flatnonzero(valid_reference)[0] else None)
+        regulatory.legend(frameon=False, fontsize=8, loc="upper center", bbox_to_anchor=(.5, -.21))
+    missing_count = int((~valid_reference).sum())
+    reference_note = ("Gespeicherte regulatorische THG-Referenz gilt für die gesamte Produktbilanz; "
+                      "die dargestellte Stromteilbilanz allein belegt keine Einhaltung.")
+    if missing_count:
+        reference_note += f" Für {missing_count} von {len(data)} Fällen fehlt eine bewertete native Referenz in kg CO₂e/kg H₂."
+        if other_reference_field in data and pd.to_numeric(data[other_reference_field], errors="coerce").notna().any():
+            reference_note += " Referenzen in g CO₂e/MJ werden auf dieser kg/kg-Achse nicht umgerechnet."
     fig.suptitle(title,fontsize=15,fontweight="bold")
-    _note(fig,"Regulatorische Null bedeutet keine physische Emissionsfreiheit. Fallbezogene Faktoren/Quellenjahre; keine vollständige LCA oder RFNBO-Zertifizierung.")
-    fig.tight_layout(rect=(0,.15,1,.93))
+    _note(fig,"Regulatorische Null bedeutet keine physische Emissionsfreiheit. " + reference_note +
+          " Fallbezogene Faktoren/Quellenjahre; keine vollständige LCA oder RFNBO-Zertifizierung.")
+    fig.tight_layout(rect=(0,.25,1,.93))
     return fig
 
 
@@ -568,25 +625,109 @@ def daily_electricity_figure(frame, *, mode="Stündlicher Tagesverlauf",timezone
     return fig
 
 
-def hourly_figure(bundle: ResultBundle, *, start=None, hours=168, timezone="UTC", title="Stündlicher Betrieb"):
+HOURLY_FIELDS = ("timestamp", "pv_self_consumption_mwh", "wind_self_consumption_mwh", "grid_import_mwh",
+                 "rf_nbo_electricity_mwh", "h2_production_kg", "h2_demand_kg", "h2_storage_level_kg")
+
+
+def hourly_frame(bundle: ResultBundle, *, start=None, hours=168, timezone="UTC"):
+    """Return the exact native intervals used by the hourly figure and export.
+
+    ``hours`` limits saved hourly rows from the chosen start. Native columns are
+    unchanged, including all additional hourly fields. Selection/case metadata
+    are repeated in columns so CSV retains the interval and its provenance.
+    A short export tail is explicit; gaps are rejected rather than connected.
+    """
     if isinstance(hours,bool) or not isinstance(hours,int) or hours < 1:
         raise ValueError("hours muss eine positive ganze Zahl sein.")
     data=_frame(bundle)
     if not bundle.hourly:
         raise ValueError("Stundenexport wurde nicht geladen.")
-    selected={}
-    required=["timestamp","pv_self_consumption_mwh","wind_self_consumption_mwh","grid_import_mwh","rf_nbo_electricity_mwh","h2_production_kg","h2_demand_kg","h2_storage_level_kg"]
+    try:
+        ZoneInfo(str(timezone))
+    except (KeyError, ValueError) as exc:
+        raise ValueError("Die gewählte Anzeigezeitzone ist ungültig.") from exc
+    aliases={"reference":"S0","red_monthly":"S1","red_hourly":"S2","off_grid":"S3"}
+    scenario_column = "scenario_id" if "scenario_id" in data else "scenario"
+    _require(data, [scenario_column])
+    summary_scenarios=data[scenario_column].astype(str).map(lambda value: aliases.get(value,value))
+    canonical_keys=[aliases.get(str(sid),str(sid)) for sid in bundle.hourly]
+    if len(set(canonical_keys))!=len(canonical_keys):
+        raise ValueError("Ein Szenario besitzt mehrere geladene Stundenexporte; genau einen nativen Export je Ergebnisfall wählen.")
+    parsed={}
     for sid,h in bundle.hourly.items():
-        _require(h,required)
-        t=pd.to_datetime(h.timestamp,utc=True)
-        chosen_start=_utc_start(start,timezone) if start is not None else t.iloc[0]
-        w=h.loc[t >= chosen_start].head(hours).copy()
+        _require(h,HOURLY_FIELDS)
+        if h.empty:
+            raise ValueError("Der geladene Stundenexport enthält keine Stundenwerte.")
+        try:
+            t=pd.to_datetime(h.timestamp,utc=True,errors="raise",format="mixed")
+        except (TypeError,ValueError) as exc:
+            raise ValueError("Der native Stundenexport enthält ungültige Zeitstempel.") from exc
+        if t.isna().any() or t.duplicated().any() or not t.is_monotonic_increasing:
+            raise ValueError("Der native Stundenexport benötigt eindeutige aufsteigende Zeitstempel.")
+        parsed[sid]=t
+    default_start=min(t.iloc[0] for t in parsed.values())
+    requested_start=_utc_start(start,timezone) if start is not None else default_start
+    selected=[]
+    for sid,h in bundle.hourly.items():
+        canonical=aliases.get(str(sid),str(sid))
+        matching=data.loc[summary_scenarios == canonical]
+        if len(matching)!=1:
+            raise ValueError("Der Stundenexport benötigt genau einen passenden Ergebnisfall je Szenario; die Fallauswahl eingrenzen.")
+        case=matching.iloc[0]
+        t=parsed[sid]
+        w=h.loc[t >= requested_start].head(hours).copy().reset_index(drop=True)
         if w.empty:
             raise ValueError("Keine Stundenwerte im gewählten Zeitraum.")
-        w["display_timestamp"]=pd.to_datetime(w.timestamp,utc=True).dt.tz_convert(timezone)
-        selected[sid]=w
+        chosen=pd.DatetimeIndex(pd.to_datetime(w.timestamp,utc=True,format="mixed"))
+        if len(chosen)>1 and not ((chosen[1:]-chosen[:-1])==pd.Timedelta(hours=1)).all():
+            raise ValueError("Der gewählte Stundenexport enthält Zeitlücken; einen lückenlos gespeicherten Zeitraum wählen.")
+        for field in HOURLY_FIELDS[1:]:
+            values=pd.to_numeric(w[field],errors="raise").to_numpy(dtype=float)
+            if not np.isfinite(values).all():
+                raise ValueError("Die ausgewählten Stundenwerte sind nicht vollständig bewertet: "+field)
+        actual_start=chosen[0]
+        actual_end=chosen[-1]+pd.Timedelta(hours=1)
+        local_start,local_end=actual_start.tz_convert(timezone),actual_end.tz_convert(timezone)
+        description=(f"{canonical}: {len(w)} gespeicherte Stunden · {local_start.strftime('%d.%m.%Y %H:%M %Z')} "
+                     f"bis {local_end.strftime('%d.%m.%Y %H:%M %Z')} (Intervallende).")
+        if len(w)<hours:
+            description+=f" Exportende erreicht: auf {len(w)} von {hours} angeforderten Stunden gekürzt."
+        if actual_start != requested_start:
+            description+=" Der tatsächliche Beginn ist die erste verfügbare native Stunde ab der angeforderten Startzeit."
+        w["display_timestamp"]=chosen.tz_convert(timezone)
+        w["display_interval_end"]=(chosen+pd.Timedelta(hours=1)).tz_convert(timezone)
+        metadata={"selection_scenario_id":canonical,"selection_native_scenario_key":str(sid),
+                  "selection_timezone":str(timezone),"selection_requested_start_utc":requested_start.isoformat(),
+                  "selection_requested_hours":hours,"selection_actual_start_utc":actual_start.isoformat(),
+                  "selection_actual_end_utc":actual_end.isoformat(),"selection_actual_start_local":local_start.isoformat(),
+                  "selection_actual_end_local":local_end.isoformat(),"selection_hours":len(w),
+                  "selection_truncated":len(w)<hours,"selection_description":description}
+        identity_fields=("study_id","site_id","site_label","demand_profile","profile","solver_name",
+                         "case_id","case_label","input_sha256","__collection","__result_directory",
+                         "__result_group_id","__native_summary_path","__native_summary_sha256")
+        for field in identity_fields:
+            if field in case:
+                metadata["selection_"+field.lstrip("_")]=case[field]
+        for field,value in metadata.items():
+            w[field]=value
+        selected.append(w)
+    frame=pd.concat(selected,ignore_index=True)
+    frame.attrs.update(timezone=str(timezone),requested_hours=hours,
+                       description=" ".join(part.selection_description.iloc[0] for part in selected))
+    return frame
+
+
+def hourly_figure(bundle: ResultBundle | pd.DataFrame, *, start=None, hours=168, timezone="UTC", title="Stündlicher Betrieb"):
+    data=hourly_frame(bundle,start=start,hours=hours,timezone=timezone) if isinstance(bundle,ResultBundle) else _frame(bundle)
+    _require(data,[*HOURLY_FIELDS,"display_timestamp","display_interval_end","selection_scenario_id",
+                   "selection_timezone","selection_description"])
+    if data.selection_timezone.nunique()!=1 or str(data.selection_timezone.iloc[0])!=str(timezone):
+        raise ValueError("Die Grafikzeitzone muss mit der Stundenauswahl übereinstimmen.")
+    selected={sid:group.reset_index(drop=True) for sid,group in data.groupby("selection_scenario_id",sort=False)}
     _apply_plot_style()
     fig,axes=plt.subplots(len(selected),3,figsize=(16,3*len(selected)+2),squeeze=False,sharex=True)
+    axis_start=data.display_timestamp.min()
+    axis_end=data.display_interval_end.max()
     emax=max(w.rf_nbo_electricity_mwh.max() for w in selected.values())*1.12
     hmax=max(w[["h2_production_kg","h2_demand_kg"]].max().max() for w in selected.values())/1000*1.12
     smax=max(w.h2_storage_level_kg.max() for w in selected.values())/1000*1.12
@@ -598,17 +739,17 @@ def hourly_figure(bundle: ResultBundle, *, start=None, hours=168, timezone="UTC"
         e.stackplot(t,stepped("pv_self_consumption_mwh"),stepped("wind_self_consumption_mwh"),stepped("grid_import_mwh"),step="post",colors=["#eab308","#0891b2","#f87171"],alpha=.83)
         e.step(t,stepped("rf_nbo_electricity_mwh"),where="post",color="#111827",linestyle="--",linewidth=1)
         e.set_ylim(0,max(emax,1))
-        e.set_ylabel(sid+" · Strom [MWh/h]")
+        e.set_ylabel(sid+" · Strom [MWh]")
         h.step(t,stepped("h2_production_kg")/1000,where="post",color="#2563eb",linewidth=1.2)
         h.step(t,stepped("h2_demand_kg")/1000,where="post",color="#111827",linestyle="--",linewidth=1)
         h.set_ylim(0,max(hmax,.01))
-        h.set_ylabel("H₂ [t/h]")
+        h.set_ylabel("H₂ je Stunde [t]")
         state_time=w.display_timestamp+pd.Timedelta(hours=1)
         tank.plot(state_time,w.h2_storage_level_kg/1000,color="#7e22ce",linewidth=1.2)
         tank.set_ylim(0,max(smax,.01))
         tank.set_ylabel("Speicherfüllstand [t]")
         for ax in axes[i]:
-            ax.set_xlim(w.display_timestamp.iloc[0],ending)
+            ax.set_xlim(axis_start,axis_end)
             # Absolute UTC tick placement avoids a zero wall-clock span for
             # 02:00 CEST -> 02:00 CET; labels retain the selected local zone.
             ax.xaxis.set_major_locator(mdates.AutoDateLocator(tz=ZoneInfo("UTC"),minticks=3,maxticks=7))
@@ -620,41 +761,25 @@ def hourly_figure(bundle: ResultBundle, *, start=None, hours=168, timezone="UTC"
     fig.suptitle(title,fontsize=15,fontweight="bold")
     handles=[Patch(facecolor="#eab308",label="PV direkt"),Patch(facecolor="#0891b2",label="Wind direkt"),Patch(facecolor="#f87171",label="Netzimport"),Line2D([0],[0],color="#111827",linestyle="--",label="Strombedarf / H₂-Lieferung"),Line2D([0],[0],color="#2563eb",label="H₂ vor Verlust"),Line2D([0],[0],color="#7e22ce",label="Speicherfüllstand")]
     fig.legend(handles=handles,ncols=3,loc="upper center",bbox_to_anchor=(.5,.925),frameon=False,fontsize=9)
-    _note(fig,"Gewählter Ausschnitt ist kein repräsentatives Jahr. Flüsse ab Stundenbeginn; Speicher am Stundenende t+1h; direkte EE-Nutzung getrennt von Zuordnung.")
-    fig.tight_layout(rect=(0,.12,1,.82))
+    description=" ".join(data.selection_description.drop_duplicates().astype(str))
+    _note(fig,description+" Gewählter Ausschnitt ist kein repräsentatives Jahr. Native Stundenmengen ab Intervallbeginn; Speicher am Stundenende t+1h; direkte EE-Nutzung getrennt von Zuordnung.")
+    fig.tight_layout(rect=(0,.19,1,.82))
     return fig
 
 
 def oat_curve_figure(frame, *, parameter: str, metric: str="lcoh_eur_per_kg_h2", title=None):
+    from .analysis_contracts import prepare_oat_frame
+    if METRIC_ROLES.get(metric) == "reference":
+        raise ValueError("Die THG-Referenz ist eine native Prüfannahme und keine Sensitivitäts-Ergebnisgröße; die Emissionsanalyse wählen.")
     data=_frame(frame)
-    parameter_col="sensitivity_parameter" if "sensitivity_parameter" in data else "parameter"
-    _require(data,[parameter_col,metric])
-    selected=data.loc[data[parameter_col] == parameter].copy()
-    if selected.empty:
-        raise ValueError("Für diesen Parameter liegen keine berechneten Varianten vor.")
-    if "__collection" in selected and selected["__collection"].nunique() > 1:
-        raise ValueError("Eine Versuchsreihe auswählen: absolute Werte und relative Parameterfaktoren verschiedener Designs dürfen nicht dieselbe x-Achse teilen.")
-    if parameter == "h2_demand_multiplier":
-        # The native runner already computes the unmodified baseline once.
-        # Include it at 100 % without producing another optimization or
-        # double-adding accepted tables that already label it as demand 1.0.
-        baseline=data.loc[data[parameter_col] == "baseline"].copy()
-        if "__collection" in selected and selected["__collection"].nunique() == 1:
-            baseline=baseline.loc[baseline["__collection"] == selected["__collection"].iloc[0]]
-        for column in ("relative_level","sensitivity_value","value"):
-            if column in data:baseline[column]=1.
-        group_fields=[column for column in ("site_label","scenario_id","demand_profile","profile","solver_name") if column in selected]
-        value_column="relative_level" if "relative_level" in selected and selected.relative_level.notna().all() else "sensitivity_value" if "sensitivity_value" in selected and selected.sensitivity_value.notna().all() else "value"
-        already=selected.loc[pd.to_numeric(selected[value_column],errors="raise") == 1.]
-        if group_fields and not already.empty:
-            keys=set(tuple(row) for row in already[group_fields].fillna("").itertuples(index=False,name=None))
-            baseline=baseline.loc[[tuple(row) not in keys for row in baseline[group_fields].fillna("").itertuples(index=False,name=None)]]
-        elif not already.empty:
-            baseline=baseline.iloc[:0]
-        selected=pd.concat([selected,baseline],ignore_index=True)
+    if "__plot_x" in data and "xlabel" in data.attrs and "group_columns" in data.attrs:
+        selected=data
+    else:
+        selected=prepare_oat_frame(data,parameter=parameter,metric=metric)
+    _require(selected,["__plot_x",metric])
     _apply_plot_style()
     profile_column="demand_profile" if "demand_profile" in selected else "profile"
-    group_columns=[col for col in ("site_label","scenario_id",profile_column,"solver_name") if col in selected]
+    group_columns=[col for col in selected.attrs.get("group_columns",[]) if col in selected]
     if not group_columns:
         selected["__all"]="Berechnete Fälle"
         group_columns=["__all"]
@@ -662,15 +787,11 @@ def oat_curve_figure(frame, *, parameter: str, metric: str="lcoh_eur_per_kg_h2",
     if len(curves) > MAX_SENSITIVITY_CURVES:
         raise ValueError(f"Für ein lesbares Sensitivitätsdiagramm höchstens {MAX_SENSITIVITY_CURVES} Kurven auswählen; Standort, Profil oder Szenario eingrenzen.")
     fig,ax=plt.subplots(figsize=(10.6,6.1+max(0,len(curves)-3)*.13))
-    x_column="relative_level" if "relative_level" in selected and selected.relative_level.notna().all() else ("sensitivity_value" if "sensitivity_value" in selected and selected.sensitivity_value.notna().all() else "value")
-    _require(selected,[x_column])
     plotted_levels=set()
     for keys,group in curves:
         keys=keys if isinstance(keys,tuple) else (keys,)
-        group=group.sort_values(x_column)
-        x=pd.to_numeric(group[x_column],errors="raise")
-        if parameter == "h2_demand_multiplier" or (x_column != "relative_level" and parameter in ("uniform_real_wacc_fraction","real_wacc_shift_fraction")):
-            x=x*100
+        group=group.sort_values("__plot_x")
+        x=pd.to_numeric(group["__plot_x"],errors="raise")
         y=pd.to_numeric(group[metric],errors="raise")
         if not np.isfinite(x).all() or not np.isfinite(y).all():
             raise ValueError("Die gewählte Versuchsreihe enthält unbewertete Versuchspunkte.")
@@ -682,19 +803,23 @@ def oat_curve_figure(frame, *, parameter: str, metric: str="lcoh_eur_per_kg_h2",
         marker={"D0":"o","D1":"s","D2":"^"}.get(profile,"o")
         label=" · ".join(_short(k,width=22) or "Nicht belegt" for k in keys)
         ax.plot(x,y,marker=marker,linestyle=":",color=SCENARIO_COLORS.get(sid),label=textwrap.fill(label,width=48))
-    ax.set_xlabel(PARAMETER_TITLES[parameter] if parameter == "h2_demand_multiplier" else "Faktor relativ zum Basisparameter" if x_column == "relative_level" else PARAMETER_TITLES.get(parameter,parameter))
+        if "__oat_is_baseline" in group:
+            reference=group["__oat_is_baseline"].fillna(False).astype(bool)
+            if reference.any():
+                ax.scatter(x.loc[reference],y.loc[reference],s=90,facecolors="none",edgecolors="#111827",zorder=4)
+    ax.set_xlabel(selected.attrs.get("xlabel",PARAMETER_TITLES.get(parameter,parameter)))
     ax.set_ylabel(METRICS.get(metric,metric))
     if len(plotted_levels) <= 12:
         ax.set_xticks(sorted(plotted_levels))
     ax.set_title(title or "OAT: gespeicherte Versuchspunkte")
     ax.legend(frameon=False,fontsize=8,loc="upper center",bbox_to_anchor=(.5,-.19),ncols=min(3,len(curves)))
-    _note(fig,"Nur tatsächlich berechnete Punkte; gepunktete Verbindungen dienen der Orientierung, keine genaue Schwelle/Prognose. Unterschiedliche Versuchsreihen getrennt.")
+    _note(fig,selected.attrs.get("note","")+" Native Bezugspunkte sind umrandet. Nur tatsächlich berechnete Punkte; gepunktete Verbindungen dienen der Orientierung, keine genaue Schwelle/Prognose. Unterschiedliche Versuchsreihen getrennt.")
     fig.tight_layout(rect=(0,.23+max(0,len(curves)-3)*.012,1,1))
     return fig
 
 
-__all__=["METRICS","PARAMETER_TITLES","CHART_TYPES","GROUP_TITLES","MAX_COMPARISON_CASES",
+__all__=["METRICS","METRIC_ROLES","REFERENCE_METRICS","DIAGNOSTIC_METRICS","PARAMETER_TITLES","CHART_TYPES","GROUP_TITLES","MAX_COMPARISON_CASES",
          "case_label_table","available_metrics","comparison_figure","profile_comparison_figure",
          "lcoh_figure","capacity_figure","cost_components_figure","emissions_figure",
-         "hourly_figure","operational_figure","oat_curve_figure","DAILY_ELECTRICITY_BASES",
+         "hourly_frame","hourly_figure","operational_figure","oat_curve_figure","DAILY_ELECTRICITY_BASES",
          "DAILY_ELECTRICITY_MODES","daily_electricity_frame","daily_electricity_figure"]

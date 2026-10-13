@@ -1,3 +1,10 @@
+> **Aktueller U2-Bestandsabgleich 12.10.2026:** Alle 13 nativen numerischen
+> Parameter und die bisherigen elf GUI-Parameter je Fallstudie/Standort bleiben
+> erhalten; hinzu kommen weiterhin die registrierten EU-Profilvarianten.
+> [Maschinenlesbarer Nachweis](outputs_h2/gui_validation/u2_20261012/inventory_after.json)
+> und [U2-Prüfstand](GUI_U2_ABNAHME.md). Die folgenden älteren Abschnitte
+> dokumentieren historische Revisionen; die aktuelle Bedienung steht in der Anleitung.
+
 # Bestandsabgleich der GUI vom 6. Oktober 2026
 
 Alle **46/46 Bestandsprüfungen** bestanden. Keine vorher freigegebene numerische Sensitivität wurde entfernt: weiterhin elf je Fallstudie, zusätzlich die kategorische Lieferprofil-Auswahl in den EU-Fällen. Der native Gesamtkatalog umfasst 13 numerische Parameter; die bestehenden studienspezifischen Freigabegrenzen bleiben dokumentiert.
@@ -161,3 +168,32 @@ erneute Internetinstallation aller Pakete wurde nicht ausgeführt.
 [Einrichtung auf einem anderen Rechner](GUI_UEBERGABE.md),
 [Übergabeprüfungen](gui/handoff_validation.json).
 Ältere Abnahmeabschnitte dokumentieren den ursprünglichen Projektstand.
+
+
+## U2: aktive Forschungswerkstatt – 12. Oktober 2026
+
+Die Oberfläche wird jetzt tatsächlich über acht Untersuchungsziele bedient.
+Gespeicherte Ergebnisse stehen am Anfang; nur „Untersuchung jetzt berechnen“
+startet einen nativen Auftrag. Die Frage, der Bezugsfall und die beobachteten
+Unterschiede stehen direkt beim Ergebnis. Kosten, Auslegung, Netz/Emissionen
+und Betrieb haben passende feste Ansichten. Daten, Quellen, Solveroptionen,
+sämtliche freigegebenen Parameter und Prüfungen bleiben erreichbar.
+
+H₂-Menge und Lieferzeiten sind gewöhnliche Sensitivitätsziele. Die Mengenansicht
+beginnt mit Jahreskosten, enthält einmal die eigene 100-%-Basis und erläutert
+die Homogenität der Neuauslegung. Beide EU-Standorte können in einer neuen
+Untersuchung enthalten sein; die gewählten Standorte/Profiles/Solver werden
+zu flachen nativen Einzelplänen zusammengesetzt. Das Beispiel 50/75/100/125/150 %,
+Hamburg/Huelva, D0/D1/D2, S0/S1/S2 umfasst 90 Fälle.
+
+Die Emissionsansicht trennt betriebliche und regulatorische elektrische Bilanz.
+Der Grenzwert erscheint nur als passende Referenz. Tagesbetrieb ist direkt in
+Analyse sowie vom exakten Sensitivitätspunkt aus erreichbar. Standortvergleiche
+haben eine eigene Auswahl; kein globaler Einzelstandortfilter täuscht deren
+Umfang vor. Grafiken und Daten behalten die U1-Fall-/Referenzbindung.
+
+Aktuelle Bedienung: [GUI_BEDIENUNGSANLEITUNG.md](GUI_BEDIENUNGSANLEITUNG.md).
+Bestand, Prüfungen und Grenzen: [GUI_U2_ABNAHME.md](GUI_U2_ABNAHME.md).
+U3-Auftragsverwaltung und die umfassende U4-Nutzer-/Geräteabnahme bleiben offen.
+Keine Änderung an Modellgleichungen, wissenschaftlichen Inputs oder vorhandenen
+Jahresergebnissen; keine neue Jahresoptimierung, PDF oder Manuskriptbearbeitung.

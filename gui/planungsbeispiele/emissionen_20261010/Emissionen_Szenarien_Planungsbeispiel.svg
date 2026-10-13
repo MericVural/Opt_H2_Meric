@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="835.2pt" height="432pt" viewBox="0 0 835.2 432" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-10T11:44:09.682288</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.9.4, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 432 
+L 835.2 432 
+L 835.2 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 66.816 324 
+L 413.212313 324 
+L 413.212313 86.4 
+L 66.816 86.4 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="mbc35869674" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mbc35869674" x="133.101714" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="133.101714" y="339.358281" transform="rotate(-0 133.101714 339.358281)">S0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#mbc35869674" x="240.014157" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="240.014157" y="339.358281" transform="rotate(-0 240.014157 339.358281)">S1</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#mbc35869674" x="346.926599" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="346.926599" y="339.358281" transform="rotate(-0 346.926599 339.358281)">S2</text>
+     </g>
+    </g>
+    <g id="text_4">
+     <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="240.014157" y="359.004219" transform="rotate(-0 240.014157 359.004219)">Stromversorgungsszenario</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <path d="M 66.816 324 
+L 413.212313 324 
+" clip-path="url(#p6f1e42d35d)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_5">
+      <defs>
+       <path id="m79fe6edca6" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m79fe6edca6" x="66.816" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: end" x="59.816" y="328.179141" transform="rotate(-0 59.816 328.179141)">0</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_6">
+      <path d="M 66.816 272.815205 
+L 413.212313 272.815205 
+" clip-path="url(#p6f1e42d35d)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="66.816" y="272.815205" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: end" x="59.816" y="276.994346" transform="rotate(-0 59.816 276.994346)">5</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_8">
+      <path d="M 66.816 221.63041 
+L 413.212313 221.63041 
+" clip-path="url(#p6f1e42d35d)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="66.816" y="221.63041" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: end" x="59.816" y="225.809551" transform="rotate(-0 59.816 225.809551)">10</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_10">
+      <path d="M 66.816 170.445615 
+L 413.212313 170.445615 
+" clip-path="url(#p6f1e42d35d)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="66.816" y="170.445615" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: end" x="59.816" y="174.624756" transform="rotate(-0 59.816 174.624756)">15</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_12">
+      <path d="M 66.816 119.26082 
+L 413.212313 119.26082 
+" clip-path="url(#p6f1e42d35d)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="66.816" y="119.26082" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: end" x="59.816" y="123.439961" transform="rotate(-0 59.816 123.439961)">20</text>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="32.530844" y="205.2" transform="rotate(-90 32.530844 205.2)">kg CO₂e je kg geliefertem H₂</text>
+    </g>
+   </g>
+   <g id="patch_3">
+    <path d="M 66.816 324 
+L 66.816 86.4 
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 66.816 324 
+L 413.212313 324 
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 102.631668 324 
+L 163.57176 324 
+L 163.57176 153.843162 
+L 102.631668 153.843162 
+z
+" clip-path="url(#p6f1e42d35d)" style="fill: #64748b"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 209.544111 324 
+L 270.484203 324 
+L 270.484203 285.662702 
+L 209.544111 285.662702 
+z
+" clip-path="url(#p6f1e42d35d)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 316.456553 324 
+L 377.396645 324 
+L 377.396645 303.030501 
+L 316.456553 303.030501 
+z
+" clip-path="url(#p6f1e42d35d)" style="fill: #16a34a"/>
+   </g>
+   <g id="text_11">
+    <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="133.101714" y="147.843162" transform="rotate(-0 133.101714 147.843162)">16,622</text>
+   </g>
+   <g id="text_12">
+    <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="240.014157" y="279.662702" transform="rotate(-0 240.014157 279.662702)">3,745</text>
+   </g>
+   <g id="text_13">
+    <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="346.926599" y="297.030501" transform="rotate(-0 346.926599 297.030501)">2,048</text>
+   </g>
+   <g id="text_14">
+    <text style="font: 13px 'DejaVu Sans'; text-anchor: middle" x="240.014157" y="71.4" transform="rotate(-0 240.014157 71.4)">Betriebliche Stromemissionen</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_8">
+    <path d="M 472.099687 324 
+L 818.496 324 
+L 818.496 86.4 
+L 472.099687 86.4 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="matplotlib.axis_3">
+    <g id="xtick_4">
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#mbc35869674" x="538.385401" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="538.385401" y="339.358281" transform="rotate(-0 538.385401 339.358281)">S0</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_15">
+      <g>
+       <use xlink:href="#mbc35869674" x="645.297843" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="645.297843" y="339.358281" transform="rotate(-0 645.297843 339.358281)">S1</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#mbc35869674" x="752.210286" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_17">
+      <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="752.210286" y="339.358281" transform="rotate(-0 752.210286 339.358281)">S2</text>
+     </g>
+    </g>
+    <g id="text_18">
+     <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="645.297843" y="359.004219" transform="rotate(-0 645.297843 359.004219)">Stromversorgungsszenario</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_4">
+    <g id="ytick_6">
+     <g id="line2d_17">
+      <path d="M 472.099687 324 
+L 818.496 324 
+" clip-path="url(#p9168351937)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_18">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="472.099687" y="324" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_19">
+      <path d="M 472.099687 272.815205 
+L 818.496 272.815205 
+" clip-path="url(#p9168351937)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_20">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="472.099687" y="272.815205" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_21">
+      <path d="M 472.099687 221.63041 
+L 818.496 221.63041 
+" clip-path="url(#p9168351937)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_22">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="472.099687" y="221.63041" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_23">
+      <path d="M 472.099687 170.445615 
+L 818.496 170.445615 
+" clip-path="url(#p9168351937)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_24">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="472.099687" y="170.445615" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+    <g id="ytick_10">
+     <g id="line2d_25">
+      <path d="M 472.099687 119.26082 
+L 818.496 119.26082 
+" clip-path="url(#p9168351937)" style="fill: none; stroke: #e2e8f0; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_26">
+      <g>
+       <use xlink:href="#m79fe6edca6" x="472.099687" y="119.26082" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+    </g>
+   </g>
+   <g id="patch_9">
+    <path d="M 472.099687 324 
+L 472.099687 86.4 
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 472.099687 324 
+L 818.496 324 
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 507.915355 324 
+L 568.855447 324 
+L 568.855447 124.336134 
+L 507.915355 124.336134 
+z
+" clip-path="url(#p9168351937)" style="fill: #64748b"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 614.827797 324 
+L 675.767889 324 
+L 675.767889 324 
+L 614.827797 324 
+z
+" clip-path="url(#p9168351937)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 721.74024 324 
+L 782.680332 324 
+L 782.680332 324 
+L 721.74024 324 
+z
+" clip-path="url(#p9168351937)" style="fill: #16a34a"/>
+   </g>
+   <g id="text_19">
+    <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="538.385401" y="118.336134" transform="rotate(-0 538.385401 118.336134)">19,504</text>
+   </g>
+   <g id="text_20">
+    <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="645.297843" y="318" transform="rotate(-0 645.297843 318)">0,000</text>
+   </g>
+   <g id="text_21">
+    <text style="font: 11px 'DejaVu Sans'; text-anchor: middle" x="752.210286" y="318" transform="rotate(-0 752.210286 318)">0,000</text>
+   </g>
+   <g id="text_22">
+    <g id="patch_14">
+     <path d="M 709.422662 285.937818 
+L 816.532037 285.937818 
+L 816.532037 273.259693 
+L 709.422662 273.259693 
+z
+" style="fill: #ffffff; opacity: 0.9"/>
+    </g>
+    <text style="fill: #b91c1c; font: 10px 'DejaVu Sans'; text-anchor: end" x="815.032037" y="282.358131" transform="rotate(-0 815.032037 282.358131)">THG-Referenz: 3,384</text>
+   </g>
+   <g id="text_23">
+    <text style="font: 13px 'DejaVu Sans'; text-anchor: middle" x="645.297843" y="71.4" transform="rotate(-0 645.297843 71.4)">Regulatorische elektrische Teilbilanz</text>
+   </g>
+   <g id="line2d_27">
+    <path d="M 472.099687 289.358131 
+L 818.496 289.358131 
+" clip-path="url(#p9168351937)" style="fill: none; stroke-dasharray: 6.66,2.88; stroke-dashoffset: 0; stroke: #b91c1c; stroke-width: 1.8"/>
+   </g>
+  </g>
+  <g id="text_24">
+   <text style="font: 700 17px 'DejaVu Sans'; text-anchor: middle" x="417.6" y="30.197344" transform="rotate(-0 417.6 30.197344)">Emissionen je Szenario · Hamburg–Moorburg</text>
+  </g>
+  <g id="text_25">
+   <text style="fill: #475569; font: 11px 'DejaVu Sans'; text-anchor: middle" x="417.6" y="45.36" transform="rotate(-0 417.6 45.36)">Historisches 2024 · Lieferprofil D0 · 3,65 Mio. kg H₂/a · HiGHS</text>
+  </g>
+  <g id="text_26">
+   <text style="fill: #475569; font: 10px 'DejaVu Sans'; text-anchor: start" x="58.464" y="378" transform="rotate(-0 58.464 378)">S0: Referenz     S1: monatliche Zuordnung     S2: stündliche Zuordnung</text>
+  </g>
+  <g id="text_27">
+   <text style="fill: #475569; font: 9.4px 'DejaVu Sans'" transform="translate(58.464 387.513044)">THG-Referenz betrifft die vollständige Produktbilanz; dargestellt ist nur der elektrische Teil.</text>
+   <text style="fill: #475569; font: 9.4px 'DejaVu Sans'" transform="translate(58.464 400.896)">Regulatorische Null bedeutet keine physische Emissionsfreiheit. Planungsbeispiel aus vorhandenen Ergebnissen.</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p6f1e42d35d">
+   <rect x="66.816" y="86.4" width="346.396313" height="237.6"/>
+  </clipPath>
+  <clipPath id="p9168351937">
+   <rect x="472.099687" y="86.4" width="346.396313" height="237.6"/>
+  </clipPath>
+ </defs>
+</svg>

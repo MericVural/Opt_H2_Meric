@@ -9,6 +9,7 @@ import pandas as pd
 
 from .case_study_registry import Registry, SiteConfiguration, ResultReference, contained_path, file_sha256, read_json, extract_year_roles
 from .result_duplicates import collapse_duplicate_results, collapse_duplicate_sensitivity_collections
+from .analysis_contracts import native_contract_fields
 
 NATIVE_TO_ID = {"reference": "S0", "red_monthly": "S1", "red_hourly": "S2", "off_grid": "S3"}
 
@@ -110,6 +111,12 @@ def _fill_missing_native_summaries(frame: pd.DataFrame, root: Path) -> pd.DataFr
             if metadata_path.is_file():
                 frame.at[index, "__native_metadata_path"] = str(metadata_path)
                 frame.at[index, "__native_metadata_sha256"] = file_sha256(metadata_path)
+                # Preserve native rows; add compact display contracts only.
+                # Actual hourly input comparisons remain lazy in OAT views.
+                for contract_field, contract_value in native_contract_fields(metadata, row, directory, root).items():
+                    if contract_field not in frame:
+                        frame[contract_field] = None
+                    frame.at[index, contract_field] = contract_value
             frame.at[index, "__native_filled_fields"] = ", ".join(filled)
         except (ValueError, KeyError, FileNotFoundError):
             # Missing/in-progress/unsafe or mismatched sources remain unavailable.

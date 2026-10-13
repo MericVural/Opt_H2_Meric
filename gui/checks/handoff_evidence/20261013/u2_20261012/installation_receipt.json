@@ -1,0 +1,89 @@
+{
+  "installed_at_utc": "2026-10-12T21:18:30.496418+00:00",
+  "target": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2",
+  "files": [
+    {
+      "path": "GUI_README.md",
+      "before": "3dfab2b4558a81d1cf305334a4c338d10d89e22895bfc6991fbc2f527346edf1",
+      "after": "4d8baf451050b0159c7a467a6375fb6e51ccc437cbc81bf05b72089b38bc19fc"
+    },
+    {
+      "path": "GUI_NEUAUFBAU_PLAN.md",
+      "before": "689859db3cba756a1327182497f81a48687df0a51f394be47662e2583b358820",
+      "after": "ab9b424bd0256af5cae020f79883a6212cfa82e9fd80b8fa6861f0a615e57444"
+    },
+    {
+      "path": "GUI_OBERFLAECHENENTWURF.md",
+      "before": "c23cb97b3af44ceb5a239134df910a870dddf2c32def66ca66ed714aad257513",
+      "after": "8cdb99cca2a3001d6ca0e1c1b6586081bc9ff846a6d66630135abec886f95e4e"
+    },
+    {
+      "path": "FORSCHUNGSARBEITSPLAN.md",
+      "before": "a80418ee3c44a77d6e80d738c1f8e67c774fb102ac2c65d11a73f44821180e20",
+      "after": "11fa59de9221fe7b404026c79ebd3b09fc5793250b5a919c8e3ff1438ada56e5"
+    },
+    {
+      "path": "README.md",
+      "before": "5911e261d120f99c0eda8b65c54bd8589dfcea239f4acc4193b209a09d79bab1",
+      "after": "5860aee236a37c29e092dd133bbfb5c27f663cf4786b9b9163169a3d48edbd2f"
+    },
+    {
+      "path": "MODELL_UND_METHODIK.md",
+      "before": "777208bc366333726bbd72a56368c554df76d01531b63a8269ded7018d2b46d0",
+      "after": "5e996b7e5cba6e9c1eb0962282edbef1bb793d00821bc687252140f44f0a745c"
+    },
+    {
+      "path": "GUI_BESTANDSLISTE.md",
+      "before": "30992832dbd2d90a570712be0dd2d4ba4e0fa8d721e79acdae7db769ca73d933",
+      "after": "4989c875059dbf09b44cf55149896060ca75ba66c5328e309db0043dcff80a35"
+    },
+    {
+      "path": "GUI_ABNAHME.md",
+      "before": "28011cade7bb24cc5e05ec2afd013cbd68dde8316e54717dc5c9c0620204bb5a",
+      "after": "92386d342ae8ffd1ffe5aefdb834ffbec6a940988fa8a9754fd721848c4ea1dc"
+    },
+    {
+      "path": "GUI_UEBERGABE.md",
+      "before": "f060944864484205d25a20d9e282c60cb4bba3b0599aefb50eacc432ab12e96c",
+      "after": "e693e7140c5bb473a95a829724331834da586c98bd8955b54b127c29a48a00e0"
+    },
+    {
+      "path": "GUI_BEDIENUNGSANLEITUNG.md",
+      "before": "368a63a15bae1520a74e08b87369b8c7cbfe6f03ceaf949cdb00c39da04908a3",
+      "after": "7ce454e0d9965c7e1334c1750ff449817a62168a348db368a4999ca8d56013eb"
+    },
+    {
+      "path": "GUI_U2_ABNAHME.md",
+      "before": null,
+      "after": "19454b38ca1cc7783186e78533f8c7e7636ce269e307229fe9244db0eca86472"
+    },
+    {
+      "path": "gui/app.py",
+      "before": "4df7bd6b7b7df0410605a85f3ae2a055de0d4156666f0b0f84c1909f778c59ad",
+      "after": "ee13a3f2d0f275531d406b5ad5ecdc4b410653abbb6d42fac843cb9fe48e031b"
+    },
+    {
+      "path": "gui/research_workspace.py",
+      "before": null,
+      "after": "7441b946091b51ae47a52f04b5c413e3245f609e35c9ed258d70bde955f6c777"
+    },
+    {
+      "path": "gui/research_logic.py",
+      "before": null,
+      "after": "506079cd2d3dcb14c78d9034ff8044e1a06d2e3bf7471bab63512887ff58a33c"
+    },
+    {
+      "path": "gui/checks/research_workspace_regression.py",
+      "before": null,
+      "after": "0234da2522e62848581791b87310ebef54b13af89d8c8b59a62461671350a3e3"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "before": null,
+      "after": "c0d1e39945909b806dc67a200ca07f163dbcde818c72c8ca6ef66ecbcdc7132f"
+    }
+  ],
+  "native_model_unchanged": true,
+  "scientific_inputs_and_results_written": false,
+  "yearly_optimizations_started": 0
+}

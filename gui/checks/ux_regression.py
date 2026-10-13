@@ -394,8 +394,10 @@ def test_saved_filters_stable_picker_graph_scope_and_export_contents(harness):
     assert widget(at,'selectbox',IDENTITY+':export:result_v2').value==chosen
     metadata=next(data for label,data,key in reversed(h.downloads) if key==IDENTITY+':native_json')
     assert metadata==b'{"fixture_case":3}'
-    assert next(data for _,data,key in reversed(h.downloads) if key=='export_figure_png').startswith(b'\x89PNG')
-    assert b'<svg' in next(data for _,data,key in reversed(h.downloads) if key=='export_figure_svg')
+    # An explicitly emptied graph no longer has a current picture export.
+    # Restoring a table filter must not revive the previous chart implicitly.
+    assert 'last_figure_export' not in at.session_state
+    assert 'last_chart_data' not in at.session_state
 
 
 def test_settings_persist_across_pages_and_sites_without_proxy_carryover(harness):

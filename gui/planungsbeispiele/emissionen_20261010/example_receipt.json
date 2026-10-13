@@ -1,0 +1,145 @@
+{
+  "date": "2026-10-10",
+  "purpose": "planning_preview_not_installed_gui",
+  "new_model_runs": 0,
+  "source_csv": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\scenario_comparison.csv",
+  "source_csv_sha256": "490600e5ca9fe4f11657fa0205fd1861153489b1210c511420b2811d9fb73618",
+  "threshold_source": "red_iii_maximum_product_intensity_kg_co2e_per_kg_h2",
+  "threshold_kg_co2e_per_kg_delivered_h2": 3.3840000000000003,
+  "reference_line_panel": "regulatory_electrical_partial_balance_only",
+  "native_validation": [
+    {
+      "scenario": "S0",
+      "result_directory": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\S0_reference",
+      "validation": {
+        "status": "passed",
+        "report_path": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\validation\\validation_report.json",
+        "report_sha256": "8ae98824c7e1f2ada3124d3619c80b60284b353cf9dcd371e8cffd6f1583aac0",
+        "source_comparison_hash_matches": true,
+        "covers_selected_result": true,
+        "report": {
+          "schema_version": "1.1",
+          "created_at_utc": "2026-10-04T12:23:44.104359+00:00",
+          "method": "Unabhängige Ex-post-Nachrechnung aus exportierten CSV- und JSON-Dateien",
+          "source_comparison": {
+            "path": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\scenario_comparison.csv",
+            "sha256": "490600e5ca9fe4f11657fa0205fd1861153489b1210c511420b2811d9fb73618"
+          },
+          "expected_hours_per_scenario": 8784,
+          "number_of_scenarios": 3,
+          "number_of_checks": 112,
+          "passed_checks": 112,
+          "failed_checks": 0,
+          "all_checks_passed": true,
+          "tolerances": {
+            "electricity_mwh": 1e-06,
+            "hydrogen_kg": 0.0001,
+            "annual_cost_eur": 0.05,
+            "relative": 1e-08
+          },
+          "scope_note": "Die Prüfung validiert numerische Modellbilanzen, Ergebnisexport, monatliche beziehungsweise stündliche Strommengen-Korrelation und den implementierten THG-Teil. Im regulatory_only-Modus bestätigt sie außerdem das explizite Nichtbewerten betrieblicher Emissionen; fehlende Werte sind kein Nullergebnis. Externe Nachweise zu Zusätzlichkeit, geografischer Korrelation, Gebotszone, Vertrag und Allokation bleiben außerhalb dieser technischen Validierung.",
+          "output_files": {
+            "checks": "validation_checks.csv",
+            "samples": "validation_samples.csv",
+            "report": "validation_report.json"
+          }
+        },
+        "interpretation": "Gespeicherter unabhängiger Prüferbericht mit Vergleichstabellen-Hash; keine neue Prüfung der Stundenexports beim Anzeigen."
+      },
+      "summary_sha256": "5c60acf3f73728e85b337368d8dd930ec5d99fbeb1b9e01b265ee963c3ce4c80"
+    },
+    {
+      "scenario": "S1",
+      "result_directory": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\S1_red_monthly",
+      "validation": {
+        "status": "passed",
+        "report_path": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\validation\\validation_report.json",
+        "report_sha256": "8ae98824c7e1f2ada3124d3619c80b60284b353cf9dcd371e8cffd6f1583aac0",
+        "source_comparison_hash_matches": true,
+        "covers_selected_result": true,
+        "report": {
+          "schema_version": "1.1",
+          "created_at_utc": "2026-10-04T12:23:44.104359+00:00",
+          "method": "Unabhängige Ex-post-Nachrechnung aus exportierten CSV- und JSON-Dateien",
+          "source_comparison": {
+            "path": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\scenario_comparison.csv",
+            "sha256": "490600e5ca9fe4f11657fa0205fd1861153489b1210c511420b2811d9fb73618"
+          },
+          "expected_hours_per_scenario": 8784,
+          "number_of_scenarios": 3,
+          "number_of_checks": 112,
+          "passed_checks": 112,
+          "failed_checks": 0,
+          "all_checks_passed": true,
+          "tolerances": {
+            "electricity_mwh": 1e-06,
+            "hydrogen_kg": 0.0001,
+            "annual_cost_eur": 0.05,
+            "relative": 1e-08
+          },
+          "scope_note": "Die Prüfung validiert numerische Modellbilanzen, Ergebnisexport, monatliche beziehungsweise stündliche Strommengen-Korrelation und den implementierten THG-Teil. Im regulatory_only-Modus bestätigt sie außerdem das explizite Nichtbewerten betrieblicher Emissionen; fehlende Werte sind kein Nullergebnis. Externe Nachweise zu Zusätzlichkeit, geografischer Korrelation, Gebotszone, Vertrag und Allokation bleiben außerhalb dieser technischen Validierung.",
+          "output_files": {
+            "checks": "validation_checks.csv",
+            "samples": "validation_samples.csv",
+            "report": "validation_report.json"
+          }
+        },
+        "interpretation": "Gespeicherter unabhängiger Prüferbericht mit Vergleichstabellen-Hash; keine neue Prüfung der Stundenexports beim Anzeigen."
+      },
+      "summary_sha256": "ec4bb1f7a9b4c10dce18551d560b72df6a683f4c29b705502a80a44408bfa7e4"
+    },
+    {
+      "scenario": "S2",
+      "result_directory": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\S2_red_hourly",
+      "validation": {
+        "status": "passed",
+        "report_path": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\validation\\validation_report.json",
+        "report_sha256": "8ae98824c7e1f2ada3124d3619c80b60284b353cf9dcd371e8cffd6f1583aac0",
+        "source_comparison_hash_matches": true,
+        "covers_selected_result": true,
+        "report": {
+          "schema_version": "1.1",
+          "created_at_utc": "2026-10-04T12:23:44.104359+00:00",
+          "method": "Unabhängige Ex-post-Nachrechnung aus exportierten CSV- und JSON-Dateien",
+          "source_comparison": {
+            "path": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\verification_runs\\basis_20261004_121938UTC\\runs\\hamburg_moorburg\\D0\\scenario_comparison.csv",
+            "sha256": "490600e5ca9fe4f11657fa0205fd1861153489b1210c511420b2811d9fb73618"
+          },
+          "expected_hours_per_scenario": 8784,
+          "number_of_scenarios": 3,
+          "number_of_checks": 112,
+          "passed_checks": 112,
+          "failed_checks": 0,
+          "all_checks_passed": true,
+          "tolerances": {
+            "electricity_mwh": 1e-06,
+            "hydrogen_kg": 0.0001,
+            "annual_cost_eur": 0.05,
+            "relative": 1e-08
+          },
+          "scope_note": "Die Prüfung validiert numerische Modellbilanzen, Ergebnisexport, monatliche beziehungsweise stündliche Strommengen-Korrelation und den implementierten THG-Teil. Im regulatory_only-Modus bestätigt sie außerdem das explizite Nichtbewerten betrieblicher Emissionen; fehlende Werte sind kein Nullergebnis. Externe Nachweise zu Zusätzlichkeit, geografischer Korrelation, Gebotszone, Vertrag und Allokation bleiben außerhalb dieser technischen Validierung.",
+          "output_files": {
+            "checks": "validation_checks.csv",
+            "samples": "validation_samples.csv",
+            "report": "validation_report.json"
+          }
+        },
+        "interpretation": "Gespeicherter unabhängiger Prüferbericht mit Vergleichstabellen-Hash; keine neue Prüfung der Stundenexports beim Anzeigen."
+      },
+      "summary_sha256": "764d0010f416dddda17c331114f1a687599f2ba0f58f24e8d6f4e3dd5f0c23c2"
+    }
+  ],
+  "checks": {
+    "3_own_native_summaries_match": true,
+    "3_source_bound_validation_reports_passed": true,
+    "one_dashed_reference_line": true,
+    "consistent_units": true,
+    "zero_baseline": true,
+    "threshold_inside_axis": true
+  },
+  "artifacts": {
+    "Emissionen_Szenarien_Planungsbeispiel.csv": "567ef6bc264cea6207e1404eeac871bcbf574cdedd254daad3288e2a1fa27a64",
+    "Emissionen_Szenarien_Planungsbeispiel.png": "e13cbcad4d2843d12844463e5b992db85d9696b30e5c2bca71c74775d00fd8c0",
+    "Emissionen_Szenarien_Planungsbeispiel.svg": "cc2cc03251891c7bdff22b83781577fa42ac88c8cd3d3663918e698180454435"
+  }
+}

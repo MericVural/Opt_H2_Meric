@@ -1,0 +1,49 @@
+Browser tab: 4, Title: "H2 Entwurf D1", URL: "http://127.0.0.1:52868/".
+1 AXWebArea H2 Entwurf D1, URL: 127.0.0.1:52868/
+	2 container Description: H2 Entwurf D1, ID: codex-visualization
+		3 AXWebArea H2 Entwurf D1, URL: about:srcdoc
+			4 container Description: H₂ Analyse-App, Oberflächenentwurf D1, ID: h2-design-d1
+				5 container
+					6 text H₂ Forschungsmodell Analyse nach Forschungsfrage Entwurf D1 · Vorschau
+				7 container Hauptbereiche
+					8 button Analyse
+					9 button Sensitivitätsanalyse
+					10 button Vergleich
+					11 button Quellen
+					12 button Export
+					13 container
+						14 text Drei Beispielabläufe
+						15 text Vorhandene Daten
+						16 text Keine neue Rechnung
+				17 container h2-content
+					18 checkbox Stromregeln vergleichen, Value: 1
+					19 checkbox Betrieb ansehen, Value: 0
+					20 heading Was bewirken die Stromregeln?, Value: 2
+						21 text Was bewirken die Stromregeln?
+					22 text Gleicher Standort, D0 und 3.650.000 kg H₂/a. Nur S0/S1/S2 verändern sich.
+					23 container
+						24 text Standort
+						25 pop up button (collapsed, settable) Standort, Value: Huelva–La Rábida, ID: h2-site, Secondary Actions: Expand
+							26 menu
+								27 Hamburg–Moorburg
+								28 (selected) Huelva–La Rábida
+						29 text Lieferprofil D0 · Rund um die Uhr 3 gespeicherte Basisfälle · reale EUR 2023 · SciPy/HiGHS
+					30 container Ergebnisansicht
+						31 checkbox Kosten, Value: 0
+						32 checkbox Emissionen, Value: 1
+					33 heading Betriebliche Stromemissionsintensität, Value: 3
+						34 text Betriebliche Stromemissionsintensität
+					35 text S0 S1 S2
+					36 text 4,87 2,46 1,43
+					37 text kg CO₂e/kg gelieferter H₂ · Balken ab null
+					38 heading Regulatorische elektrische Teilintensität, Value: 3
+						39 text Regulatorische elektrische Teilintensität
+					40 text S0 S1 S2
+					41 text 7,36 0,00 0,00
+					42 text ┆ Gestrichelte Referenz: 3,384 kg CO₂e/kg H₂
+					43 text kg CO₂e/kg gelieferter H₂ · Balken ab null
+					44 text Produktgrenzwert als Referenz; dargestellt ist nur die elektrische Teilbilanz. Regulatorische Null bedeutet keine physische Emissionsfreiheit.
+					45 button (collapsed) Modellprüfung und Herkunft, Secondary Actions: Expand
+						46 text Modellprüfung und Herkunft
+
+The focused UI element is 3 AXWebArea H2 Entwurf D1, URL: about:srcdoc

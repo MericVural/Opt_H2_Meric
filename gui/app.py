@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 from gui.case_study_registry import load_registry, contained_path
-from gui import model_adapter, jobs, gui_utils, result_loader, plotting, sensitivity_design
+from gui import model_adapter, jobs, gui_utils, result_loader, plotting, sensitivity_design, analysis_contracts
 from gui.analysis_intent import ANALYSES, SCENARIO_LABELS, PROFILE_LABELS, request_scope, selection_errors, defaults_for
 
 PAGES=['Analyse','Sensitivitätsanalyse','Vergleich','Quellen','Export']
@@ -115,7 +115,7 @@ def demand_quantity_table(site,profiles,variants):
 
 def demand_quantity_note():
     st.caption('Nachfragemenge und Lieferprofil sind getrennte Fragen: Der Nachfragefaktor skaliert jede Stunde desselben Profils proportional; die Lieferfenster von D0/D1/D2 bleiben erhalten. 100 % ist der einmalige unveränderte Basisfall.')
-    st.info('Für jede Nachfragemenge wird die Anlage neu kostenoptimal ausgelegt. Das lineare Modell enthält keine Größendegression der Investitionskosten. Kapazitäten und Jahreskosten können deshalb proportional zur Nachfrage steigen, während LCOH gleich bleiben. Dies untersucht neue Anlagenauslegungen; Engpässe einer fest vorgegebenen Bestandsanlage werden damit nicht geprüft.')
+    st.info('Für jede Nachfragemenge wird die Anlage neu kostenoptimal ausgelegt. Das Modell enthält keine Größendegression. Bei unveränderten spezifischen Kosten und ohne absolute Kapazitätsgrenzen ist das lineare Modell homogen: Jahreskosten skalieren proportional zur Nachfrage, minimale LCOH bleiben innerhalb der numerischen Genauigkeit konstant. Dies prüft eine Modelleigenschaft. Gleich teure Optima können Kapazitäten unterschiedlich aufteilen. Industrielle Größeneffekte oder Engpässe einer Bestandsanlage werden damit nicht untersucht.')
 
 def sensitivity_editor(identity,site):
     editor=st.session_state.setdefault(identity+':oat_editor_state',{})
@@ -242,10 +242,20 @@ def sensitivity_editor(identity,site):
     return variants
 
 def result_table(registry,site,profiles=None):
-    frame=result_loader.load_registered_results(registry,site.study_id,site.site_id)
+    if '_research_stamp' in st.session_state:
+        from gui.research_workspace import read_cases
+        frame=read_cases(str(REPO),site.study_id,site.site_id,'base',st.session_state['_research_stamp'],registry)
+    else:
+        frame=result_loader.load_registered_results(registry,site.study_id,site.site_id)
     if profiles and 'profile' in frame:
         frame=frame[frame.profile.isin(profiles)]
     return frame
+
+def sensitivity_table(registry,site):
+    if '_research_stamp' in st.session_state:
+        from gui.research_workspace import read_cases
+        return read_cases(str(REPO),site.study_id,site.site_id,'sensitivity',st.session_state['_research_stamp'],registry)
+    return result_loader.load_sensitivity_comparisons(registry,site.study_id,site.site_id)
 
 def sensitivity_collection_label(family):
     row=family.iloc[0];details=[]
@@ -269,7 +279,7 @@ def analysis_result_table(registry,site,identity):
     """Keep result families distinct while making their native cases analyzable."""
     families={'base_results':result_table(registry,site)}
     labels={'base_results':'Basis- und Szenariofälle'}
-    sens=result_loader.load_sensitivity_comparisons(registry,site.study_id,site.site_id)
+    sens=sensitivity_table(registry,site)
     if not sens.empty:
         field='__collection_id' if '__collection_id' in sens else '__collection'
         for cid,group in sens.groupby(field,sort=False):
@@ -566,34 +576,71 @@ def saved_result_filters(frame,identity):
 
 
 def metric_options(frame):
-    # Scientific metrics first; full native outputs remain in table/export.
-    return [k for k in dict.fromkeys([*METRIC_LABELS,*plotting.METRICS]) if k in frame]
+    # References and solver/balance diagnostics belong to the native details.
+    available=plotting.available_metrics(frame)
+    return [k for k in dict.fromkeys([*METRIC_LABELS,*available]) if k in available]
 
 def metric_label(key):
     return METRIC_LABELS.get(key,plotting.METRICS.get(key,key))
+
+def clear_chart_export():
+    for key in ('last_figure_export','last_chart_data'):
+        st.session_state.pop(key,None)
+
+def valid_selectbox(label,options,*,key,format_func=None):
+    if st.session_state.get(key) not in options:st.session_state.pop(key,None)
+    kwargs={'key':key}
+    if format_func is not None:kwargs['format_func']=format_func
+    return st.selectbox(label,options,**kwargs)
 
 def remember_figure(figure,frame,label):
     png=io.BytesIO();svg=io.BytesIO()
     figure.savefig(png,format='png',dpi=160,bbox_inches='tight')
     figure.savefig(svg,format='svg',bbox_inches='tight')
-    st.session_state['last_figure_export']={'png':png.getvalue(),'svg':svg.getvalue(),'label':label}
-    st.session_state['last_chart_data']=frame.to_csv(index=False).encode('utf-8-sig')
+    case_fields=[c for c in ('study_id','site_id','scenario_id','demand_profile','profile','solver_name','case_id','__result_directory','source_result_directory') if c in frame]
+    context=frame[case_fields].drop_duplicates().fillna('').astype(str).to_dict('records') if case_fields else []
+    scope=st.session_state.get('chart_scope',{})
+    st.session_state['last_figure_export']={'png':png.getvalue(),'svg':svg.getvalue(),'label':label,'context':context,'scope':dict(scope)}
+    export_frame=frame.copy()
+    # CSV must retain the meaning of transformed axes as well as their values.
+    export_frame['__plot_label']=label
+    export_frame['__plot_x_label']=frame.attrs.get('xlabel') or ' | '.join(dict.fromkeys(ax.get_xlabel() for ax in figure.axes if ax.get_xlabel()))
+    export_frame['__plot_y_labels']=json.dumps([ax.get_ylabel() for ax in figure.axes],ensure_ascii=False)
+    export_frame['__plot_operation']=frame.attrs.get('operation','')
+    export_frame['__plot_note']=frame.attrs.get('note','')
+    export_frame['__plot_parameter']=frame.attrs.get('oat_parameter','')
+    st.session_state['last_chart_data']=export_frame.to_csv(index=False).encode('utf-8-sig')
     show_figure(figure)
+    with st.expander('Diese Grafik herunterladen'):
+        st.caption(label+' · exakt angezeigte Fälle und Werte')
+        for extension,mime in [('png','image/png'),('svg','image/svg+xml')]:
+            st.download_button('Grafik als '+extension.upper(),st.session_state['last_figure_export'][extension],
+                               'h2_figure.'+extension,mime,key='inline_figure_'+extension)
+        st.download_button('Exakte Grafikdaten (CSV)',st.session_state['last_chart_data'],'figure_data.csv',
+                           'text/csv',key='inline_figure_data')
 
 def selected_chart(frame,identity,title):
+    clear_chart_export()
     if frame.empty:return
     options=metric_options(frame)
     if not options:
         st.info('Keine numerische Kennzahl für diese Auswahl vorhanden.');return
-    metric=st.selectbox('Kennzahl',options,format_func=metric_label,key=identity+':metric')
     chart=st.selectbox('Diagrammtyp',['Balkendiagramm','Liniendiagramm','Gruppierte Balken','Gestapelte Kosten'],key=identity+':chart_type')
+    metric=None if chart=='Gestapelte Kosten' else valid_selectbox('Kennzahl',options,format_func=metric_label,key=identity+':metric')
+    if chart=='Gestapelte Kosten':st.caption('Kostenbestandteile je geliefertem kg H₂; negative Netzimportkosten bleiben sichtbar.')
     labels={saved_case_id(row):saved_case_label(row) for _,row in frame.iterrows()}
-    selected=st.multiselect('Fälle in der Grafik',list(labels),default=list(labels)[:min(3,len(labels))],format_func=lambda k:labels[k],key=identity+':cases')
+    defaults=analysis_contracts.controlled_scenario_defaults(frame)
+    if not defaults:defaults=list(labels)[:1]
+    case_key=identity+':cases'
+    if case_key in st.session_state:
+        st.session_state[case_key]=[k for k in st.session_state[case_key] if k in labels]
+    selected=st.multiselect('Fälle in der Grafik',list(labels),default=defaults,format_func=lambda k:labels[k],key=case_key)
     chosen=frame[frame.apply(saved_case_id,axis=1).isin(selected)].copy()
     if chosen.empty:
         st.caption('Mindestens einen Fall für die Grafik auswählen.');return
     if len(chosen)>12:
         st.info('Für eine lesbare Grafik höchstens 12 Fälle auswählen. Alle Fälle bleiben in Tabelle und Export verfügbar.');return
+    st.caption(analysis_contracts.comparison_design(chosen))
     grouping=None
     if chart=='Gruppierte Balken':
         groups=[k for k in ('scenario_id','demand_profile','profile','site_id','solver_name') if k in chosen]
@@ -609,6 +656,7 @@ def selected_chart(frame,identity,title):
 
 def render_daily_electricity(frame,site,identity,*,selected_row=None):
     """Read a saved native case and display its complete local calendar day."""
+    clear_chart_export()
     row=selected_row if selected_row is not None else pick_result(
         frame,identity+':daily_case',label='Ergebnisfall für den Tagesverlauf')
     if row is None:return
@@ -653,12 +701,14 @@ def render_daily_electricity(frame,site,identity,*,selected_row=None):
         st.error('Tagesgrafik kann für diese Auswahl nicht angezeigt werden: '+str(exc))
 
 def render_result_display(frame,site,identity):
+    clear_chart_export()
     if frame.empty:
         st.info('Noch keine passenden Ergebnisdateien vorhanden.');return
     row=pick_result(frame,identity)
     if row is None:return
     bundle=result_loader.load_result_directory(result_path(row),REPO,include_hourly=True)
     render_metrics(bundle)
+    st.caption('Kennzahlkarten, Quellen und Betriebsansichten gehören zum gewählten Detailfall. Ein Mehrfachvergleich besitzt seine eigene ausdrücklich angezeigte Fallauswahl.')
     with st.expander('Unabhängige Validierung und Herkunft'):
         show_validation(bundle)
         st.caption('Eine Szenarioteilauswahl kann die vollständige S0/S1/S2-Prüfung nicht erfüllen. Bilanz- und Quellenfehler bleiben davon getrennt sichtbar.')
@@ -670,15 +720,24 @@ def render_result_display(frame,site,identity):
         timezone=site.metadata.get('input_metadata',{}).get('calendar_timezone','UTC')
         beginning=st.text_input('Beginn des Ausschnitts (lokale Zeit)',f'{year}-02-10 00:00',key=identity+':hourly_start')
         hours=st.number_input('Stunden im Ausschnitt',min_value=1,max_value=int(row.number_of_hours),value=min(168,int(row.number_of_hours)),step=24,key=identity+':hourly_length')
-        try:remember_figure(plotting.hourly_figure(bundle,start=beginning,hours=int(hours),timezone=timezone),pd.DataFrame([row]),'Stundenbetrieb')
+        try:
+            hourly=plotting.hourly_frame(bundle,start=beginning,hours=int(hours),timezone=timezone)
+            hourly['source_result_directory']=str(result_path(row))
+            hourly['case_label']=saved_case_label(row)
+            st.caption(str(hourly.selection_description.iloc[0]))
+            remember_figure(plotting.hourly_figure(hourly,timezone=timezone),hourly,'Stundenbetrieb')
         except (ValueError,KeyError) as exc:st.error(str(exc))
-    elif view=='Betriebskennzahlen':remember_figure(plotting.operational_figure(bundle,title=site.label),pd.DataFrame([row]),view)
+    elif view=='Betriebskennzahlen':remember_figure(plotting.operational_figure(bundle,title=site.label),plotting.derived_operational_metrics(bundle),view)
     else:
         funcs={'Kapazitäten':plotting.capacity_figure,'Kostenkomponenten':plotting.cost_components_figure,'Emissionen':plotting.emissions_figure}
         remember_figure(funcs[view](pd.DataFrame([row]),title=site.label),pd.DataFrame([row]),view)
     with st.expander('Alle Kennzahlen und Ergebnisfälle'):
         st.dataframe(frame.drop(columns=['__result_copies'],errors='ignore'),hide_index=True,width='stretch')
         st.dataframe(bundle.summary,hide_index=True,width='stretch')
+    with st.expander('Modellprüfung: Referenzen und Diagnosegrößen'):
+        columns=[c for c in plotting.available_metrics(frame,roles=('reference','diagnostic'))]
+        if columns:st.dataframe(frame[[c for c in ('site_id','profile','scenario_id','solver_name') if c in frame]+columns],hide_index=True,width='stretch')
+        else:st.caption('Referenz- und Diagnosewerte stehen in den nativen Metadaten und dem Prüfnachweis dieses Falls.')
 
 @st.fragment(run_every='3s')
 def inline_job_results(job_dir,site,identity):
@@ -728,6 +787,7 @@ def run_controls(site,identity,sensitivity=False):
     return profiles,scenarios,solver,both
 
 def render_sensitivity_frame(sens,identity,site):
+    clear_chart_export()
     if sens.empty:
         st.info('Keine gespeicherten Sensitivitäten vorhanden.');return
     st.subheader('Ergebnisse der Sensitivitätsanalyse')
@@ -738,7 +798,10 @@ def render_sensitivity_frame(sens,identity,site):
     if profile_field and sens[profile_field].dropna().nunique()>1:parameters.append('h2_delivery_profile')
     if not parameters:
         st.dataframe(sens.drop(columns=['__result_copies'],errors='ignore'),hide_index=True,width='stretch');return
-    parameter=st.selectbox('Berechneter Einfluss',parameters,format_func=lambda p:PARAMETER_LABELS.get(p,p),key=identity+':oat_view_parameter')
+    def influence_label(parameter):
+        if parameter=='h2_delivery_profile':return PARAMETER_LABELS[parameter]
+        return analysis_contracts.parameter_presentation(sens,parameter)['label']
+    parameter=valid_selectbox('Berechneter Einfluss',parameters,format_func=influence_label,key=identity+':oat_view_parameter')
     if parameter!='h2_delivery_profile' and profile_field:
         profiles=sorted(sens[profile_field].dropna().astype(str).unique())
         key=identity+':oat_view_profile'
@@ -756,7 +819,11 @@ def render_sensitivity_frame(sens,identity,site):
     if st.session_state.get(identity+':oat_chart') not in charts:st.session_state.pop(identity+':oat_chart',None)
     chart=st.selectbox('Sensitivitätsdarstellung',charts,key=identity+':oat_chart')
     metrics=metric_options(sens)
-    metric=st.selectbox('Ergebnisgröße',metrics,format_func=metric_label,key=identity+':oat_metric')
+    if not metrics:
+        st.info('Keine bewertete fachliche Ergebnisgröße vorhanden. Vollständige native Werte bleiben in der Tabelle.');return
+    if parameter=='h2_demand_multiplier' and identity+':oat_metric' not in st.session_state and 'objective_eur_per_year' in metrics:
+        st.session_state[identity+':oat_metric']='objective_eur_per_year'
+    metric=valid_selectbox('Ergebnisgröße',metrics,format_func=metric_label,key=identity+':oat_metric')
     st.caption('Tages- und Stundenbetrieb eines einzelnen Falls: Analyse → Gespeicherte Ergebnisse → Ergebnisreihe. Dort sind auch alle Sensitivitätsfälle auswählbar.')
     if 'scenario_id' in sens:
         scenarios=sorted(sens.scenario_id.dropna().unique())
@@ -766,14 +833,20 @@ def render_sensitivity_frame(sens,identity,site):
     if not graph_frame.empty:
         figure=None
         if parameter=='h2_demand_multiplier':demand_quantity_note()
-        if parameter=='h2_delivery_profile':figure=plotting.profile_comparison_figure(graph_frame,metric=metric,chart_type='Gruppierte Balken' if chart=='Gruppierte Balken' else 'Liniendiagramm')
-        elif chart=='Sensitivitätskurve':figure=plotting.oat_curve_figure(graph_frame,parameter=parameter,metric=metric)
-        else:
-            graph_frame=graph_frame[graph_frame.sensitivity_parameter.isin([parameter,'baseline'])]
-            if len(graph_frame)>12:
-                st.info('Für gruppierte Balken höchstens 12 Fälle wählen oder die Sensitivitätskurve verwenden.')
-            else:figure=plotting.comparison_figure(graph_frame,metric=metric,chart_type='Gruppierte Balken',group_by='scenario_id')
-        if figure is not None:remember_figure(figure,graph_frame,'Sensitivität')
+        try:
+            if parameter=='h2_delivery_profile':
+                figure=plotting.profile_comparison_figure(graph_frame,metric=metric,chart_type='Gruppierte Balken' if chart=='Gruppierte Balken' else 'Liniendiagramm')
+            else:
+                graph_frame=analysis_contracts.prepare_oat_frame(graph_frame,parameter=parameter,metric=metric)
+                st.caption(graph_frame.attrs.get('note',''))
+                if chart=='Sensitivitätskurve':figure=plotting.oat_curve_figure(graph_frame,parameter=parameter,metric=metric)
+                elif len(graph_frame)>12:st.info('Für gruppierte Balken höchstens 12 Fälle wählen oder die Sensitivitätskurve verwenden.')
+                else:figure=plotting.comparison_figure(graph_frame,metric=metric,chart_type='Gruppierte Balken',group_by='scenario_id')
+            if figure is not None:
+                label='Sensitivität · '+site.label+' · '+influence_label(parameter)+' · '+metric_label(metric)
+                remember_figure(figure,graph_frame,label)
+        except (ValueError,KeyError,TypeError) as exc:
+            st.info('Für diese Sensitivitätsauswahl ist keine belegte Grafik verfügbar: '+str(exc))
     st.dataframe(sens.drop(columns=['__result_copies'],errors='ignore'),hide_index=True,width='stretch')
     st.download_button('Gespeicherte Sensitivitätstabelle herunterladen',sens.to_csv(index=False).encode('utf-8-sig'),'sensitivities.csv','text/csv',key=identity+':sens_download')
     show_saved_origins(sens,'Ausführungen und Herkunft der Versuchsreihe')
@@ -786,7 +859,7 @@ def render_sensitivity_frame(sens,identity,site):
                       on_click=open_daily_analysis,args=(site,row))
 
 def stored_sensitivities(registry,identity,site):
-    sens=result_loader.load_sensitivity_comparisons(registry,site.study_id,site.site_id)
+    sens=sensitivity_table(registry,site)
     if sens.empty:
         st.info('Keine gespeicherten Sensitivitäten vorhanden.');return
     field='__collection_id' if '__collection_id' in sens else '__collection'
@@ -832,11 +905,15 @@ def sources_view(registry,study,site,identity):
         for profile,ref in site.profiles.items():
             st.write('**'+profile+'**');st.json(ref.metadata,expanded=False)
     with st.expander('Validierungsnachweis eines gespeicherten Falls'):
+        if not st.checkbox('Konkreten Prüfnachweis laden',key=identity+':source_evidence'):return
         filtered=saved_result_filters(result_table(registry,site),identity+':validation')
         row=pick_result(filtered,identity+':validation')
         if row is not None:show_validation(result_loader.load_result_directory(result_path(row),REPO))
 
 def comparison_view(registry):
+    clear_chart_export()
+    st.session_state.pop('comparison_export',None)
+    st.session_state.pop('comparison_export_context',None)
     st.caption('Gespeicherte Analyse- und Sensitivitätsfälle gezielt gegenüberstellen. Es startet keine Berechnung.')
     frames=[]
     for sid,study in registry.studies.items():
@@ -860,17 +937,24 @@ def comparison_view(registry):
         st.info('Vergleichsfälle auswählen; anschließend Kennzahl, Diagrammtyp und Gruppierung festlegen.');return
     context,warnings=result_loader.comparison_context(registry,chosen)
     for warning in warnings:st.warning(warning)
-    metric=st.selectbox('Vergleichskennzahl',metric_options(chosen),format_func=metric_label,key='comparison_metric')
+    st.caption(analysis_contracts.comparison_design(chosen))
     chart=st.selectbox('Vergleichsdiagramm',['Balkendiagramm','Liniendiagramm','Gruppierte Balken','Gestapelte Kosten'],key='comparison_chart_type')
+    metrics=metric_options(chosen)
+    metric=None if chart=='Gestapelte Kosten' else valid_selectbox('Vergleichskennzahl',metrics,format_func=metric_label,key='comparison_metric')
+    if chart=='Gestapelte Kosten':st.caption('Kostenbestandteile je geliefertem kg H₂; die fachliche Größe ist für diese Ansicht festgelegt.')
     groups=[None,*[c for c in ('scenario_id','site_id','demand_profile','profile','solver_name','study_id') if c in chosen]]
     group=st.selectbox('Gruppierung',groups,format_func=lambda x:'Keine' if x is None else x.replace('_',' '),key='comparison_group')
     if len(chosen)>12:st.info('Für eine lesbare Grafik höchstens 12 Fälle auswählen. Tabelle und Export enthalten die gesamte Auswahl.')
     else:
-        figure=plotting.cost_components_figure(chosen,title='Kostenvergleich') if chart=='Gestapelte Kosten' else plotting.comparison_figure(chosen,metric=metric,chart_type=chart,group_by=group,title='Ausgewählte Vergleichsfälle')
-        remember_figure(figure,chosen,'Vergleich')
-        with st.expander('Fallnamen der Grafik'):st.dataframe(plotting.case_label_table(chosen),hide_index=True,width='stretch')
+        try:
+            figure=plotting.cost_components_figure(chosen,title='Kostenvergleich') if chart=='Gestapelte Kosten' else plotting.comparison_figure(chosen,metric=metric,chart_type=chart,group_by=group,title='Ausgewählte Vergleichsfälle')
+            remember_figure(figure,chosen,'Vergleich · '+('Kostenbestandteile' if metric is None else metric_label(metric)))
+            with st.expander('Fallnamen der Grafik'):st.dataframe(plotting.case_label_table(chosen),hide_index=True,width='stretch')
+        except (ValueError,KeyError,TypeError) as exc:
+            st.info('Diese Grafik braucht eine eindeutigere Fallauswahl: '+str(exc))
     st.dataframe(chosen.drop(columns=['__result_copies'],errors='ignore'),hide_index=True,width='stretch')
     st.session_state['comparison_export']=chosen.to_csv(index=False).encode('utf-8-sig')
+    st.session_state['comparison_export_context']=chosen[[c for c in ('study_id','site_id','profile','scenario_id','solver_name','case_id','__result_directory') if c in chosen]].to_dict('records')
     with st.expander('Jahre, Bezugsbasen und Vergleichbarkeit'):st.dataframe(context.astype(str),hide_index=True,width='stretch')
     show_saved_origins(chosen,'Gespeicherte Ausführungen der Vergleichsfälle')
 
@@ -886,18 +970,24 @@ def export_view(registry,site,identity):
         st.download_button('Native Metadaten (JSON)',(path/'run_metadata.json').read_bytes(),'run_metadata.json','application/json',key=identity+':native_json')
         report=result_loader.validation_for_result(path,REPO)
         st.download_button('Validierungsnachweis (JSON)',json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'),'validation_evidence.json','application/json',key=identity+':validation_json')
-    sens=result_loader.load_sensitivity_comparisons(registry,site.study_id,site.site_id)
+    sens=sensitivity_table(registry,site)
     if not sens.empty:st.download_button('Alle gespeicherten Sensitivitätsfälle dieses Standorts (CSV)',sens.to_csv(index=False).encode('utf-8-sig'),'all_sensitivities.csv','text/csv',key=identity+':export_sensitivities')
-    if 'comparison_export' in st.session_state:st.download_button('Ausgewählte Vergleichsfälle (CSV)',st.session_state['comparison_export'],'comparison.csv','text/csv',key='export_comparison')
+    if 'comparison_export' in st.session_state:
+        st.caption('Eigene Auswahl aus dem Bereich Vergleich:')
+        st.dataframe(pd.DataFrame(st.session_state.get('comparison_export_context',[])),hide_index=True,width='stretch')
+        st.download_button('Ausgewählte Vergleichsfälle (CSV)',st.session_state['comparison_export'],'comparison.csv','text/csv',key='export_comparison')
     figure=st.session_state.get('last_figure_export')
-    if figure:
-        st.caption('Zuletzt angezeigte Grafik: '+figure['label'])
+    scope=figure.get('scope',{}) if figure else {}
+    matching=scope.get('page')=='Vergleich' or (scope.get('study_id')==site.study_id and scope.get('site_id')==site.site_id)
+    if figure and matching:
+        st.caption('Gespeicherte Grafik mit eigenem Auswahlkontext: '+figure['label'])
+        if figure.get('context'):st.dataframe(pd.DataFrame(figure['context']),hide_index=True,width='stretch')
         for extension,mime in [('png','image/png'),('svg','image/svg+xml')]:
             st.download_button('Grafik als '+extension.upper(),figure[extension],'h2_figure.'+extension,mime,key='export_figure_'+extension)
-        st.download_button('Daten der zuletzt angezeigten Grafik (CSV)',st.session_state['last_chart_data'],'figure_data.csv','text/csv',key='export_figure_data')
-    else:st.caption('Eine Grafik in Analyse, Sensitivitätsanalyse oder Vergleich anzeigen; danach hier als PNG/SVG exportieren.')
+        st.download_button('Exakte Daten dieser Grafik (CSV)',st.session_state['last_chart_data'],'figure_data.csv','text/csv',key='export_figure_data')
+    else:st.caption('Für diese Standortauswahl ist keine Grafik vorbereitet. Die passende Grafik in Analyse, Sensitivitätsanalyse oder Vergleich öffnen.')
 
-def main():
+def legacy_main():
     st.set_page_config(page_title='H₂ | Forschungsmodell',page_icon='🔬',layout='wide')
     st.markdown('<style>.stMainBlockContainer{padding-top:1.5rem} h1{letter-spacing:-.02em} [data-testid="stSidebar"] h1{font-size:1.3rem}</style>',unsafe_allow_html=True)
     try:registry=load_registry(REPO)
@@ -915,6 +1005,13 @@ def main():
         st.info('Diese Fallstudie ist dokumentiert; Eingaben und Runner sind noch nicht registriert.');return
     site_id=b.selectbox('Standort',list(study.sites),format_func=lambda k:study.sites[k].label,key='site:'+study_id)
     site=registry.get_site(study_id,site_id);identity=study_id+':'+site_id
+    if page in ('Analyse','Sensitivitätsanalyse','Vergleich'):
+        clear_chart_export()
+        st.session_state['chart_scope']={'page':page,'study_id':study_id,'site_id':site_id}
+    elif page=='Export':
+        figure=st.session_state.get('last_figure_export')
+        scope=figure.get('scope',{}) if figure else {}
+        if figure and scope.get('page')!='Vergleich' and (scope.get('study_id')!=study_id or scope.get('site_id')!=site_id):clear_chart_export()
     st.session_state.setdefault(identity+':settings',defaults_for('scenario_comparison',site.profiles))
     if site.historical:st.info('Historische Namibia-Fallstudie: TMY-Wetterbasis und dokumentierte Proxies. Vergleichbarkeit mit EU 2024 ist eingeschränkt.')
     for warning in registry.warnings:st.sidebar.caption(warning)
@@ -967,5 +1064,11 @@ def main():
     previous_pdf=REPO/'GUI_BEDIENUNGSANLEITUNG.pdf'
     if previous_pdf.is_file():st.sidebar.download_button('Frühere GUI-Anleitung (PDF)',previous_pdf.read_bytes(),previous_pdf.name,'application/pdf',key='download_GUI_BEDIENUNGSANLEITUNG.pdf')
     st.sidebar.caption('Eine Modellimplementierung · native Runner · getrennte Jahres- und Quellenrollen')
+
+def main():
+    from types import SimpleNamespace
+    from gui.research_workspace import render
+    render(SimpleNamespace(**globals()))
+
 
 if __name__=='__main__':main()

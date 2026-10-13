@@ -1,0 +1,30 @@
+{
+  "verified_at_utc": "2026-10-12T21:29:21.082209+00:00",
+  "url": "http://127.0.0.1:8510/",
+  "installed_files_match_receipt": 16,
+  "native_model_unchanged": true,
+  "quantity_rows": 15,
+  "quantity_levels_percent": [
+    50,
+    75,
+    100,
+    125,
+    150
+  ],
+  "own_baseline_count": 3,
+  "day": "2024-01-02",
+  "day_hours": 24,
+  "day_source": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\eu_case_studies\\historical_2024\\demand_quantity_20261005\\runs\\hamburg_moorburg\\D0\\runs\\demand_050\\reference",
+  "day_values_match_native_hourly_file": true,
+  "daily_grid_mwh": 239.90743672245353,
+  "yearly_optimizations_started": 0,
+  "server": {
+    "server_pid": 1848,
+    "created_utc": "2026-10-12T21:18:46.186980+00:00",
+    "GUI_python": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\.venv-gui\\Scripts\\python.exe",
+    "GUI_app": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\gui\\app.py",
+    "URL": "http://127.0.0.1:8510/",
+    "log": "C:\\Forschungsarbeit\\Opt_H2_Meric-h2\\outputs_h2\\gui_runtime\\server.log",
+    "creation_flags": 150994944
+  }
+}

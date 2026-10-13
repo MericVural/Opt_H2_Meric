@@ -1,6 +1,14 @@
 # Forschungsarbeitsplan
 
-**Verbindlicher roter Faden · Stand: 6. Oktober 2026.**
+**Verbindlicher roter Faden · Stand: 13. Oktober 2026.**
+
+**GUI-Korrektur vom 13.10.2026:** Reine Basisfall-, Stromregel- und
+Solververgleiche wurden beim Start irrtümlich wie numerische Sensitivitäten
+geprüft. Der Startweg ist getrennt; Lieferprofilvergleiche verwenden die
+kategorische Profilprüfung. Die Startübersicht zeigt die vollständige Auswahl.
+Nachweis und Prüfgrenzen: [GUI_U2_ABNAHME.md](GUI_U2_ABNAHME.md),
+[Neuaufbauplan, Abschnitt 18](GUI_NEUAUFBAU_PLAN.md#18-korrektur-des-untersuchungsstarts--13-oktober-2026).
+Der wissenschaftliche Modellstand und vorhandene Ergebnisse bleiben erhalten.
 
 Dieser Plan beantwortet: Was untersuchen wir, wo stehen wir und was folgt?
 Allgemeine Gleichungen stehen in [MODELL_UND_METHODIK.md](MODELL_UND_METHODIK.md),
@@ -345,6 +353,97 @@ direkte Arbeitsbereiche vereinfacht; der vollständige Funktionsumfang bleibt
 erhalten (Abschnitt 10). Es ist keine weitere wissenschaftliche Variante
 gestartet. Das Manuskript wird auf Nutzerwunsch weiterhin nicht bearbeitet;
 eine neue fachliche Modellfrage ist noch nicht festgelegt.
+
+**Auftrag vom 10.10.2026: GUI und Analysen zunächst neu planen.**
+Der Nutzer priorisiert die Auswahl des Analyseziels mit verständlicher Führung
+durch die Einstellungen. Der [Neuaufbauplan](GUI_NEUAUFBAU_PLAN.md) hält den
+geprüften Bestand, Analyseziele, Bezugsfälle, Diagramme, Ergebnisverwaltung und
+Arbeitspakete fest. Der vollständige wissenschaftliche Funktionsumfang bleibt
+erhalten. In dieser damaligen Planungsphase waren GUI-Implementierung und neue
+Modellläufe noch nicht begonnen. Das Manuskript bleibt zurückgestellt.
+
+**Diagrammkonkretisierung vom 10.10.2026:** Wenige fachlich passende Ansichten
+werden aus dem Analyseziel vorgegeben. Die regulatorische THG-Grenze erscheint
+als gestrichelte Referenz im regulatorischen Intensitätsdiagramm je Szenario,
+nicht als eigenständige Sensitivitätskurve. Prüfgrößen bleiben unter Modellprüfung
+und sämtliche Werte in Tabelle/Export erhalten. Abschnitt 7.5 des Neuaufbauplans
+enthält diese Regeln und eine Vorschaugrafik aus drei vorhandenen validierten
+Hamburger D0-Fällen. Keine GUI-Implementierung und keine neue Optimierung.
+
+**Anwendungsprüfung vom 10.10.2026 abgeschlossen:** Alle fünf GUI-Bereiche wurden
+anhand von Code und vorhandenen Resultaten geprüft und im Browser aufgerufen.
+Abschnitt 13 des [Neuaufbauplans](GUI_NEUAUFBAU_PLAN.md) dokumentiert 19 offene
+Mängel (7 P1, 11 P2, 1 P3), Belege, wirtschaftliche Aussagegrenzen, sinnvolle
+Bedienabläufe und konkrete Abnahmekriterien. Vorrangig sind korrekte
+Preisbezeichnungen und OAT-Referenzen, passende Diagramme/Fallauswahlen,
+exakte Grafikexporte sowie verlässliche Auftragszustände und Schutz vor
+unbeabsichtigten Mehrfachstarts. Nachweise liegen unter
+`outputs_h2/gui_validation/anwendungsaudit_20261010/`. Keine neue Optimierung,
+keine GUI-Implementierung und keine Manuskriptbearbeitung. Das Mängelregister
+bildet die Grundlage des anschließenden Oberflächenentwurfs D1.
+
+**Oberflächenentwurf D1 vom 11.10.2026 ausgearbeitet:**
+Der [Entwurf](GUI_OBERFLAECHENENTWURF.md) legt fünf Hauptbereiche, acht Ziele,
+konkrete Formulare, fachlich passende Ergebnisansichten und eindeutige Exporte
+fest. Nachfrage, Szenarien/Emissionen und Tagesbetrieb sind als Beispielabläufe
+mit einer klickbaren Vorschau vorhandener Daten ausgearbeitet. Der lesende
+Bestandsabgleich erhält 13 native numerische Parameter, elf GUI-Parameter je
+Studie sowie die kategorischen EU-Profile und ordnet alle 19 Mängel zu.
+Keine Modellgleichung, aktive GUI oder wissenschaftliche Ergebnisdatei wurde
+verändert; die Vorschau startet keine Berechnung. Damals war der nächste Schritt die
+Durchsicht von D1 und anschließend Umsetzungsetappe U1 (Ergebnisidentität,
+eigene Referenzen und Grafik-/Exportbindung). Manuskript bleibt zurückgestellt.
+
+**Aktueller Umsetzungsstand vom 11.10.2026: lokale U1-Revision
+implementiert und gezielt geprüft.** Die Fortsetzung wurde durch den Nutzer
+autorisiert. Die GUI leitet Preisbezeichnungen und Achsen aus der tatsächlichen
+nativen Operation ab, bindet jede numerische OAT-Reihe an genau eine eigene
+belegte Basis und wählt kontrollierte S0/S1/S2-Gruppen nur bei gleichem übrigen
+Input-/Modell-/Profil-/Solverkontext. Freie Mischvergleiche bleiben deskriptiv.
+Referenzen und Diagnosegrößen haben eigene Rollen; die regulatorische Referenz
+ergänzt die passende Intensitätsansicht. Grafik-CSV und Stundenexport verwenden
+die tatsächlich dargestellte Auswahl einschließlich Basis und Zeitfenster.
+Kontextwechsel, fehlende Daten und uneindeutige Fall-/Referenzzuordnungen führen
+zu konkreten Meldungen und entfernen veraltete Grafikexporte.
+
+Der [U1-Nachweis](GUI_U1_ABNAHME.md) dokumentiert M01/M02/M03/M04/M05/M06/M07/M11,
+Prüfumfang, Ergebnisse und verbleibende Grenzen. Die bisherigen Audit- und
+D1-Abschnitte bleiben historische Nachweise. Wissenschaftliche Originalinputs,
+Modellgleichungen und vorhandene Ergebnisdateien wurden nicht geändert; keine
+neue Modelloptimierung wurde als Teil von U1 gestartet. Die Übernahme des
+geprüften GUI-Stands wird im U1-Nachweis dokumentiert.
+**Nach U1 war die nächste Umsetzungsetappe U2** mit Analyseziel, passenden
+Formularen und gemeinsamer Arbeitsfläche, gefolgt von U3-Auftragsverwaltung und
+U4-Abnahme/Übergabe. Der vollständige Neuaufbau und die Produktabnahme sind offen;
+das Manuskript bleibt zurückgestellt.
+
+## U2: aktive Forschungswerkstatt – 12. Oktober 2026
+
+Die Oberfläche wird jetzt tatsächlich über acht Untersuchungsziele bedient.
+Gespeicherte Ergebnisse stehen am Anfang; nur „Untersuchung jetzt berechnen“
+startet einen nativen Auftrag. Die Frage, der Bezugsfall und die beobachteten
+Unterschiede stehen direkt beim Ergebnis. Kosten, Auslegung, Netz/Emissionen
+und Betrieb haben passende feste Ansichten. Daten, Quellen, Solveroptionen,
+sämtliche freigegebenen Parameter und Prüfungen bleiben erreichbar.
+
+H₂-Menge und Lieferzeiten sind gewöhnliche Sensitivitätsziele. Die Mengenansicht
+beginnt mit Jahreskosten, enthält einmal die eigene 100-%-Basis und erläutert
+die Homogenität der Neuauslegung. Beide EU-Standorte können in einer neuen
+Untersuchung enthalten sein; die gewählten Standorte/Profiles/Solver werden
+zu flachen nativen Einzelplänen zusammengesetzt. Das Beispiel 50/75/100/125/150 %,
+Hamburg/Huelva, D0/D1/D2, S0/S1/S2 umfasst 90 Fälle.
+
+Die Emissionsansicht trennt betriebliche und regulatorische elektrische Bilanz.
+Der Grenzwert erscheint nur als passende Referenz. Tagesbetrieb ist direkt in
+Analyse sowie vom exakten Sensitivitätspunkt aus erreichbar. Standortvergleiche
+haben eine eigene Auswahl; kein globaler Einzelstandortfilter täuscht deren
+Umfang vor. Grafiken und Daten behalten die U1-Fall-/Referenzbindung.
+
+Aktuelle Bedienung: [GUI_BEDIENUNGSANLEITUNG.md](GUI_BEDIENUNGSANLEITUNG.md).
+Bestand, Prüfungen und Grenzen: [GUI_U2_ABNAHME.md](GUI_U2_ABNAHME.md).
+U3-Auftragsverwaltung und die umfassende U4-Nutzer-/Geräteabnahme bleiben offen.
+Keine Änderung an Modellgleichungen, wissenschaftlichen Inputs oder vorhandenen
+Jahresergebnissen; keine neue Jahresoptimierung, PDF oder Manuskriptbearbeitung.
 
 ## 8. Nach Schritt 25: Vergleichskonsistenz mit Namibia
 

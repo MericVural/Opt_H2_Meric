@@ -15,6 +15,13 @@ REPO = Path(__file__).resolve().parents[1]
 URL = 'http://127.0.0.1:8510/'
 HERE = Path(__file__).resolve().parent
 
+def server_creation_flags():
+    if os.name != 'nt':
+        return 0
+    # A hidden console alone still inherits the launching terminal's job.
+    # Request an independent server lifetime; Windows must permit breakaway.
+    return subprocess.CREATE_NO_WINDOW | subprocess.CREATE_BREAKAWAY_FROM_JOB
+
 def healthy():
     try:
         request = urllib.request.Request(URL+'_stcore/health')
@@ -37,17 +44,26 @@ def main():
         runtime = REPO/'outputs_h2/gui_runtime'
         runtime.mkdir(parents=True,exist_ok=True)
         log = runtime/'server.log'
+        creation_flags = server_creation_flags()
         with log.open('ab') as output:
-            process = subprocess.Popen([sys.executable,'-m','streamlit','run',str(app),
-                '--server.address','127.0.0.1','--server.port','8510',
-                '--server.headless','true','--browser.gatherUsageStats','false',
-                '--server.fileWatcherType','none'],cwd=str(REPO),env=environment,
-                stdin=subprocess.DEVNULL,stdout=output,stderr=subprocess.STDOUT,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
+            try:
+                process = subprocess.Popen([sys.executable,'-m','streamlit','run',str(app),
+                    '--server.address','127.0.0.1','--server.port','8510',
+                    '--server.headless','true','--browser.gatherUsageStats','false',
+                    '--server.fileWatcherType','none'],cwd=str(REPO),env=environment,
+                    stdin=subprocess.DEVNULL,stdout=output,stderr=subprocess.STDOUT,
+                    creationflags=creation_flags)
+            except OSError as exc:
+                if os.name == 'nt' and getattr(exc, 'winerror', None) == 5:
+                    raise RuntimeError(
+                        'Windows verweigert den unabhängigen GUI-Start aus dieser '
+                        'Prozessumgebung. Bitte H2-Modell starten.cmd im '
+                        'Windows-Explorer öffnen.') from exc
+                raise
         (runtime/'server.json').write_text(json.dumps({
             'server_pid':process.pid,'created_utc':datetime.now(timezone.utc).isoformat(),
             'GUI_python':sys.executable,'GUI_app':str(app),'URL':URL,
-            'log':str(log)},indent=2)+'\n',encoding='utf-8')
+            'log':str(log),'creation_flags':creation_flags},indent=2)+'\n',encoding='utf-8')
         ready = False
         for _ in range(60):
             if healthy():

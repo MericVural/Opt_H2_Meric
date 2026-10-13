@@ -39,6 +39,8 @@ def demand_frame():
         for factor in (.5, .75, 1., 1.25, 1.5):
             rows.append({"site_label": "Hamburg", "scenario_id": scenario, "demand_profile": "D1",
                          "solver_name": "scipy-highs", "sensitivity_parameter": "h2_demand_multiplier",
+                         "case_id": f"documented_fixture_{scenario}_{factor}",
+                         "baseline_context_sha256": "documented-fixture",
                          "sensitivity_value": factor, "lcoh_eur_per_kg_h2": 4.+int(scenario[1]),
                          "annual_h2_delivered_kg": factor*3_650_000.,
                          "objective_eur_per_year": factor*3_650_000.*(4.+int(scenario[1])),

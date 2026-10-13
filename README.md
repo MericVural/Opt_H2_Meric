@@ -28,9 +28,17 @@ Die GUI öffnet unter <http://127.0.0.1:8510/>; Codex wird nicht benötigt.
 [Bedienungsanleitung](GUI_BEDIENUNGSANLEITUNG.md) ·
 [Technik und Funktionsumfang](GUI_README.md).
 
-Tagesbetrieb einzelner Fälle: **Analyse → Gespeicherte Ergebnisse → Ergebnisreihe**.
-Parameterwirkungen: **Sensitivitätsanalyse**. Alle bisherigen Modellparameter,
-Szenarien und Solver bleiben vorhanden.
+**Neue Forschungsoberfläche U2 (12.10.2026):** Acht Untersuchungsziele führen
+zu passenden Ergebnissen und verständlichen Vergleichen. Die App beginnt mit
+gespeicherten Resultaten. Regelvergleich, Nachfrage, Preis/WACC/Technik,
+Lieferfenster, Standorte und Tagesbetrieb sind direkt erreichbar.
+[Aktuelle Bedienung](GUI_BEDIENUNGSANLEITUNG.md) ·
+[Prüfstand und Grenzen](GUI_U2_ABNAHME.md) ·
+[Neuaufbauplan](GUI_NEUAUFBAU_PLAN.md).
+
+Tageskurven: **Analyse → Tagesbetrieb verstehen**. Parameterwirkungen:
+**Sensitivitätsanalyse → Untersuchungsziel**. Alle bisherigen freigegebenen
+Parameter, Szenarien und Solver bleiben erhalten.
 
 ## Aktueller Stand
 
@@ -73,6 +81,7 @@ kein vollständiger RFNBO-Zertifizierungsnachweis.
 | Dokument | Zweck |
 |---|---|
 | [FORSCHUNGSARBEITSPLAN.md](FORSCHUNGSARBEITSPLAN.md) | Forschungsrahmen, Fortschritt, Reihenfolge und nächste Aufgaben |
+| [GUI_OBERFLAECHENENTWURF.md](GUI_OBERFLAECHENENTWURF.md) | Konkreter Entwurf D1; zukünftige Bedienabläufe, Ergebnisansichten und Umsetzungsschnittstellen |
 | [MODELL_UND_METHODIK.md](MODELL_UND_METHODIK.md) | Allgemeiner Modellkern, Gleichungen, Datenfluss, RED-Abbildung und Grenzen |
 | [Fallstudienübersicht](fallstudien/README.md) | Index aller bestehenden und späteren Fallstudien |
 | [Namibia](fallstudien/FALLSTUDIE_NAMIBIA.md) | Historische Daten, Entwicklung, Abnahme, Ergebnisse und Reproduktion |

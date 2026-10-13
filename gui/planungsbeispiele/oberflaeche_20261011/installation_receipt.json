@@ -1,0 +1,46 @@
+{
+  "installed_at_utc": "2026-10-11T10:43:24.068432+00:00",
+  "client_date": "2026-10-11",
+  "scope": "Design D1, six existing Markdown updates, one new design specification, isolated preview/evidence; no active GUI or model implementation",
+  "documents": {
+    "GUI_NEUAUFBAU_PLAN.md": {
+      "before": "1bec164ca90dbbf39918d570984f4f0ed7d7ccbfd01d9a864963fbb1ea47f45f",
+      "after": "b2b4676c6ac7ff2afaaab071af33029c626e080dc115d44829277525d5eee654"
+    },
+    "FORSCHUNGSARBEITSPLAN.md": {
+      "before": "fa259e15cc66a7b2e3eeb7b5181eb4e0fa17398c3feb1d9e7e4424cbd4eda0a3",
+      "after": "88dc3304c7b5f5353cbde7bf5e3d52e2c2c8510f1f849e02cc71066d6d643576"
+    },
+    "README.md": {
+      "before": "cdc8b35b78eb2dba2ecc87708612eb44b8a4e86c01b8316d9d55fbf73fe440d4",
+      "after": "5911e261d120f99c0eda8b65c54bd8589dfcea239f4acc4193b209a09d79bab1"
+    },
+    "GUI_README.md": {
+      "before": "16ad4d8b8c0a371a4179c315f1d8f3c553003d6dbd8dde7248e2f132c6d45c2b",
+      "after": "8fff2d3372bd74aa9cd2cfbfcbc8fad45e7af71bbcc1dddace46fabb4b914697"
+    },
+    "MODELL_UND_METHODIK.md": {
+      "before": "175e3010f1b7da5d459313b0120137f735cf54405dc7fb3dce10e5e26fa10b1b",
+      "after": "777208bc366333726bbd72a56368c554df76d01531b63a8269ded7018d2b46d0"
+    },
+    "GUI_BESTANDSLISTE.md": {
+      "before": "d21b557f50d2bb57d7a4aa5bffe143f0387c3d332d221b3aae338595ce438669",
+      "after": "30992832dbd2d90a570712be0dd2d4ba4e0fa8d721e79acdae7db769ca73d933"
+    },
+    "GUI_OBERFLAECHENENTWURF.md": {
+      "before": null,
+      "after": "9e6b1b8cbf703e7f392bd8ccd6290c397f2d1241ec929bbb2a67c1a1a60e4ef7"
+    }
+  },
+  "unchanged_code_and_registry_files": 40,
+  "assets": {
+    "emissionen_vorschau.png": "efed3fded3bc8aee92657bc488c24a5c2f40f9ebef7938a41cce69f3077417bf",
+    "emissionen_vorschau.txt": "1fac33477c3f34ad4a4ad512d285b0cda7e915b133c1a18a4dec779443180b28",
+    "entwurfsabgleich.json": "9cde4eaa21b953d813be9d120a4ab3a0bea4d921b263f6242f9e300520b7af55",
+    "entwurfsnachweis.json": "6843a5c00fdab57988f7a8217a0734e2032f5a7c75b7a5ae031c585584a3de18",
+    "entwurf_d1.fragment.html": "539ac0566a3970601a6f6ddfb25ba41996f1f550749f42b81ba612d7fc2f1749",
+    "prepare_design_data.py": "e7c34d3946561eeaf343de9c6a78248244e4a38a12d72665e51e53a6fd89e54d",
+    "preview_data.json": "bd7a6ccc9070609410962e34d8f21852f83e75ebd83ae4ee2fcb60a42a1110fe",
+    "VORSCHAU_PRUEFUNG.md": "4b78513c1a53c6063df7fab483422f89a07489472c687dcce929cdc52b54756d"
+  }
+}

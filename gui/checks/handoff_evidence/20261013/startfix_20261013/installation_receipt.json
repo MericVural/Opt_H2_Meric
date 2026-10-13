@@ -1,0 +1,60 @@
+{
+  "installed_at_utc": "2026-10-13T11:04:12.584700+00:00",
+  "files": [
+    {
+      "path": "gui/research_workspace.py",
+      "before_sha256": "7441B946091B51AE47A52F04B5C413E3245F609E35C9ED258D70BDE955F6C777",
+      "after_sha256": "30F887E4A01D3B7420D16438053B31D5A8093CB83D8656D1020782FD47975AD3"
+    },
+    {
+      "path": "gui/checks/research_workspace_regression.py",
+      "before_sha256": "0234DA2522E62848581791B87310EBEF54B13AF89D8C8B59A62461671350A3E3",
+      "after_sha256": "140C32F3681A8C07D7FC2DC7D412078A92711FD4BE7A4C629F337D3BEFDCA388"
+    },
+    {
+      "path": "GUI_NEUAUFBAU_PLAN.md",
+      "before_sha256": "AB9B424BD0256AF5CAE020F79883A6212CFA82E9FD80B8FA6861F0A615E57444",
+      "after_sha256": "90BC9781876D4CCFBD13C4E55CD907A96B46CE619121ECEB301B82377B3BB0E0"
+    },
+    {
+      "path": "GUI_U2_ABNAHME.md",
+      "before_sha256": "19454B38CA1CC7783186E78533F8C7E7636CE269E307229FE9244DB0ECA86472",
+      "after_sha256": "C7B2A8B2E1CCF8B2747C92A7E3D08D7AE8F3CAAEA4775A475EB7673745B1204F"
+    },
+    {
+      "path": "FORSCHUNGSARBEITSPLAN.md",
+      "before_sha256": "11FA59DE9221FE7B404026C79EBD3B09FC5793250B5A919C8E3FF1438ADA56E5",
+      "after_sha256": "1BA3F1CA841FC96BB236C3B04113AC161D35DE9708BD89861FDC416991D4F07A"
+    },
+    {
+      "path": "GUI_BEDIENUNGSANLEITUNG.md",
+      "before_sha256": "7CE454E0D9965C7E1334C1750FF449817A62168A348DB368A4999CA8D56013EB",
+      "after_sha256": "A1DED3F79BB84153A75075AC0F51827760EDA56099F7C50416F0A6C678CB550E"
+    }
+  ],
+  "tests": {
+    "research_ui": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "23",
+      "time": "134.916",
+      "timestamp": "2026-10-13T13:01:05.779649+02:00",
+      "hostname": "MericThinkpad"
+    },
+    "contracts": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "29",
+      "time": "39.624",
+      "timestamp": "2026-10-13T13:02:09.255264+02:00",
+      "hostname": "MericThinkpad"
+    }
+  },
+  "native_model_unchanged": true,
+  "annual_optimizations_started": 0,
+  "job_submission_simulated_in_tests": true
+}

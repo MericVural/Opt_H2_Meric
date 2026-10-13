@@ -27,11 +27,16 @@ py -3.11 -m venv .venv-gui
 .\.venv-gui\Scripts\python.exe -B gui\start_local_gui.py
 ```
 
-Mit **Analyse → Gespeicherte Ergebnisse → Ergebnisreihe** vorhandene Basisfälle
-oder einzelne Sensitivitätsfälle auswählen. **Darstellung → Tagesstrom:
-Solar, Wind und Netz** bietet Datum, Stundenverlauf oder kumulierte Tagesenergie.
-**Sensitivitätsanalyse** vergleicht die Wirkung geänderter Parameter.
-Die ausführliche Bedienung steht in [GUI_BEDIENUNGSANLEITUNG.md](GUI_BEDIENUNGSANLEITUNG.md).
+Die aktuelle lokale Oberfläche U2 beginnt mit **Analyse → Stromregeln vergleichen**
+und gespeicherten Ergebnissen. **Analyse → Tagesbetrieb verstehen** zeigt Solar,
+Wind und Netz für einen ausgewählten Tag; **Sensitivitätsanalyse** bietet Menge,
+Lieferzeiten und Preis/Finanzierung/Technik. Bedienung und Stand:
+[GUI_BEDIENUNGSANLEITUNG.md](GUI_BEDIENUNGSANLEITUNG.md),
+[GUI_U2_ABNAHME.md](GUI_U2_ABNAHME.md). Dieser Übergabestand enthält U1/U2
+und die Startkorrektur vom 13. Oktober 2026. Stromregel-, Anlagen- und
+Solververgleiche benötigen keinen numerischen Sensitivitätsparameter.
+Die mitgelieferten Prüfbelege stehen unter
+[gui/checks/handoff_evidence/20261013](gui/checks/handoff_evidence/20261013).
 
 ## Inhalt und Quellenbindung
 
@@ -73,3 +78,12 @@ Ein Benutzerkonto oder fester Ordnername ist für den Checkout nicht erforderlic
 Die PDF-GUI-Anleitung ist die historische Fassung vom 5. Oktober; die
 Markdown-Anleitung beschreibt die aktuelle Oberfläche. Lokale Optimierungen
 schreiben weiterhin in das von Git ausgeschlossene `outputs_h2/`.
+
+## Prüfung des Übergabestands vom 13. Oktober 2026
+
+Die separate Projektausgabe mit wiederhergestelltem Datensnapshot besteht
+**119 gezielte GUI-, Vergleichs-, Profil-, Tages- und
+Portabilitätsprüfungen**. Alle Modell- und GUI-Quellcodedateien stimmen mit dem
+geprüften Stand überein. Keine neue Jahresoptimierung; die neue pip-Installation
+auf einem anderen Rechner ist nicht Teil dieser Prüfung. Details und Grenzen:
+[GitHub-Übergabenachweis](gui/checks/handoff_evidence/20261013/README.md).

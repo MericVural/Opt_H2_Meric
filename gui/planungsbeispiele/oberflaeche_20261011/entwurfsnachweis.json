@@ -1,0 +1,30 @@
+{
+  "version": "D1",
+  "date": "2026-10-11",
+  "purpose": "Frozen read-only excerpt for interface preview; no optimizer, no new validation claim",
+  "inputs": [
+    {
+      "path": "outputs_h2/eu_case_studies/historical_2024/demand_quantity_20261005/results/demand_quantity_comparison.csv",
+      "sha256": "17a6a926ca67540a34a366175834a8bda7862ff7b64e5a9e7607314778d8749b"
+    },
+    {
+      "path": "outputs_h2/eu_case_studies/historical_2024/verification_runs/basis_20261004_121938UTC/runs/hamburg_moorburg/D0/scenario_comparison.csv",
+      "sha256": "490600e5ca9fe4f11657fa0205fd1861153489b1210c511420b2811d9fb73618"
+    },
+    {
+      "path": "outputs_h2/eu_case_studies/historical_2024/verification_runs/basis_20261004_121938UTC/runs/huelva_la_rabida/D0/scenario_comparison.csv",
+      "sha256": "e125579dfa4868df72c0c753eb5ef8f62f4e01fa899d371766f829c2ace1f371"
+    },
+    {
+      "path": "outputs_h2/eu_case_studies/historical_2024/verification_runs/basis_20261004_121938UTC/runs/hamburg_moorburg/D0/S2_red_hourly/hourly_operation.csv",
+      "sha256": "4debfbd8ee0352cf2975f5790ecd6af8924b007586494a8ec7db02c5b7239615"
+    }
+  ],
+  "counts": {
+    "demand": 90,
+    "scenarios": 6,
+    "daily_hours": 72
+  },
+  "daily_scope": "Hamburg D0 S2, fresh D0 basis, 2024-01-02 through 2024-01-04, Europe/Berlin",
+  "preview_source_sha256": "539ac0566a3970601a6f6ddfb25ba41996f1f550749f42b81ba612d7fc2f1749"
+}

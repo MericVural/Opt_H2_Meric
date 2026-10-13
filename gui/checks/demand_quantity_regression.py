@@ -179,6 +179,7 @@ def sensitivity_fixture(*,label_baseline_as_demand=True,result_directory=None):
                     'objective_eur_per_year':3650000*(4+int(profile[1]))*factor,
                     'annual_h2_delivered_kg':3650000*factor,
                     '__collection':'H₂-Nachfragemenge','case_id':'baseline' if factor==1 else str(factor),
+                    'baseline_context_sha256':'explicit-quantity-fixture-v1',
                     **({'__result_directory':result_directory} if result_directory else {})})
     return pd.DataFrame(rows)
 
@@ -217,6 +218,7 @@ def test_demand_curve_has_five_percent_points_including_one_baseline(mapped):
 
 
 def write_saved_gui_job(root,job_id,profiles,*,parameter=PARAMETER,lcoh=4.):
+    from pathlib import Path
     """Persist minimal native exports and their hash-bound GUI plan receipt."""
     job=root/'outputs_h2/gui_runs'/job_id
     executions=[]
@@ -245,9 +247,22 @@ def write_saved_gui_job(root,job_id,profiles,*,parameter=PARAMETER,lcoh=4.):
                     'compressor_capacity_mw':.1*demand_factor,'h2_storage_capacity_kg':demand_factor}
                 pd.DataFrame([summary]).to_csv(directory/'summary.csv',index=False)
                 metadata={'schema_version':'fixture','scenario':scenario,'input':{'sha256':input_hash},
-                    'model_parameters':{'quantity':{'value':demand_factor},'pv_capex':{'value':value if parameter!='h2_demand_multiplier' and value is not None else 1000}},
+                    # Demand is an hourly input intervention; the native model
+                    # configuration remains unchanged across its factors.
+                    'model_parameters':{'study.h2_demand_kg_per_day':{'value':10.,'unit':'kg_H2/day','reference_year':2024},
+                        'technologies.pv.capex_eur_per_kw':{'value':value if parameter!=PARAMETER and value is not None else 1000.,
+                            'unit':'EUR_2023/kW','reference_year':2023}},
                     'calendar_scope':{'number_of_hours':2},'model_calendar':{'year':2024},
                     'software':{'fixture':'saved native file contract'},'result':summary}
+                if value is not None:
+                    operation='multiply_hourly_h2_demand_preserve_profile' if parameter==PARAMETER else 'replace_baseline_scalar'
+                    changed={} if parameter==PARAMETER else {'technologies.pv.capex_eur_per_kw':
+                        {'base_value':1000.,'applied_value':value,'unit':'EUR_2023/kW'}}
+                    transformation={'parameter':parameter,'value':value,'operation':operation,'changed_scalar_parameters':changed}
+                    metadata['sensitivity_override']=transformation
+                    parent=Path(baseline_paths[(profile,scenario_id)])/'validated_input.csv'
+                    metadata['input']['sensitivity_provenance']={'parent_input':{'path':str(parent),
+                        'sha256':hashlib.sha256(parent.read_bytes()).hexdigest()},'case_transformation':transformation}
                 (directory/'run_metadata.json').write_text(json.dumps(metadata),encoding='utf-8')
                 records.append({**summary,'case_id':case_id,'parameter':'baseline' if value is None else parameter,
                     'value':value,'result_directory':str(directory.relative_to(output))})

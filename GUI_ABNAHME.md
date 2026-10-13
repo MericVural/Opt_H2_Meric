@@ -1,3 +1,34 @@
+## U2: aktive Forschungswerkstatt – 12. Oktober 2026
+
+Die Oberfläche wird jetzt tatsächlich über acht Untersuchungsziele bedient.
+Gespeicherte Ergebnisse stehen am Anfang; nur „Untersuchung jetzt berechnen“
+startet einen nativen Auftrag. Die Frage, der Bezugsfall und die beobachteten
+Unterschiede stehen direkt beim Ergebnis. Kosten, Auslegung, Netz/Emissionen
+und Betrieb haben passende feste Ansichten. Daten, Quellen, Solveroptionen,
+sämtliche freigegebenen Parameter und Prüfungen bleiben erreichbar.
+
+H₂-Menge und Lieferzeiten sind gewöhnliche Sensitivitätsziele. Die Mengenansicht
+beginnt mit Jahreskosten, enthält einmal die eigene 100-%-Basis und erläutert
+die Homogenität der Neuauslegung. Beide EU-Standorte können in einer neuen
+Untersuchung enthalten sein; die gewählten Standorte/Profiles/Solver werden
+zu flachen nativen Einzelplänen zusammengesetzt. Das Beispiel 50/75/100/125/150 %,
+Hamburg/Huelva, D0/D1/D2, S0/S1/S2 umfasst 90 Fälle.
+
+Die Emissionsansicht trennt betriebliche und regulatorische elektrische Bilanz.
+Der Grenzwert erscheint nur als passende Referenz. Tagesbetrieb ist direkt in
+Analyse sowie vom exakten Sensitivitätspunkt aus erreichbar. Standortvergleiche
+haben eine eigene Auswahl; kein globaler Einzelstandortfilter täuscht deren
+Umfang vor. Grafiken und Daten behalten die U1-Fall-/Referenzbindung.
+
+Aktuelle Bedienung: [GUI_BEDIENUNGSANLEITUNG.md](GUI_BEDIENUNGSANLEITUNG.md).
+Bestand, Prüfungen und Grenzen: [GUI_U2_ABNAHME.md](GUI_U2_ABNAHME.md).
+U3-Auftragsverwaltung und die umfassende U4-Nutzer-/Geräteabnahme bleiben offen.
+Keine Änderung an Modellgleichungen, wissenschaftlichen Inputs oder vorhandenen
+Jahresergebnissen; keine neue Jahresoptimierung, PDF oder Manuskriptbearbeitung.
+
+
+---
+
 ## GitHub-Übergabe der GUI (6. Oktober 2026)
 
 Der Branch enthält GUI, nativen Modellcode, Einrichtung und einen gehashten
@@ -344,3 +375,10 @@ Alle ursprünglichen Herkunfts- und Prüfnachweise bleiben pro Ausführung erhal
 Die zusätzliche Prüfung mit realen registrierten Daten bestätigt Hamburg **27 → 16** Ergebnisfälle, Huelva **12 → 12** und Namibia **3 → 3**. Hamburgs zwei D1-Aufträge sind in jedem ihrer drei gemeinsamen Basisfälle zusammengefasst; abweichende historische D1-Fälle bleiben getrennt. Hamburgs 81 Sensitivitätszeilen in drei Sammlungen und Huelvas 75 in zwei Sammlungen bleiben vollständig. Die zwei identischen Namibia-Referenzen auf dieselbe Versuchsreihe werden von 96 auf 48 Zeilen in einer Sammlung zusammengefasst. Die sechs neuen Hamburg-PEM-Varianten bleiben erhalten.
 
 Reale Streamlit-Prüfungen für Ergebnisse, Validierung, Export, Vergleiche und gespeicherte Sensitivitäten bestätigen die Fallauswahl und Downloads. 895 beobachtete Export-/Jobdateien blieben während dieser Prüfung unverändert. Außerdem sind 26 native Python-Dateien, 18 aktive Quellen-/Design-Dateien, 361 frühere wissenschaftliche Quellen-/Ergebnisdateien und die vorhandenen GUI-Nachweise unverändert. Es wurde kein Optimierer gestartet. Die lokale Browseransicht bestätigt einen gemeinsamen D1-Fall mit zwei erhaltenen Originalausführungen; deren fehlender unabhängiger Prüfbericht bleibt sichtbar.
+## Ergänzung U1 vom 11. Oktober 2026
+
+Der [U1-Abnahmebericht](GUI_U1_ABNAHME.md) dokumentiert den wissenschaftlichen Ergebnis-, Referenz- und Exportvertrag. **159/159 Regressionstests** und **14/14 gezielte fachliche Checks mit echten gespeicherten Ergebnissen** bestanden. Preisoperationen und eigene OAT-Basen sind belegt; Ergebnisgrößen, native Referenzen und Diagnostik erhalten passende Rollen; kontrollierte Szenarienauswahl und genaue Grafik-/CSV-/Stundenbindung sind geprüft. Alte Grafiken werden bei leerer Auswahl oder inkompatiblem Standortkontext verworfen, uneindeutige Kategorien verständlich abgefangen.
+
+Native Modellgleichungen und wissenschaftliche Basisparameter wurden nicht geändert. Keine neuen Modelloptimierungen, kein Commit oder Push. Quellen, Originalergebnisse und historische Nachweise bleiben erhalten; die Übernahme besitzt ein neues Archiv mit Sicherung und Dateihashes. Geführte Forschungsziele aus U2 und die weiteren Auftrags-/Produkt-/Nutzerprüfungen aus U3/U4 bleiben offen.
+
+[Neuer U1-Installationsbeleg](outputs_h2/gui_validation/u1_20261011/u1_receipt.json), [fachlicher Audit des installierten Codes](outputs_h2/gui_validation/u1_20261011/verification/scientific_audit_final/SCIENTIFIC_AUDIT.md).

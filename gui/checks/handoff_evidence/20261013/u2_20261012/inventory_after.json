@@ -1,0 +1,130 @@
+{
+  "native_parameters": {
+    "baseline": "-",
+    "electricity_price_eur_per_mwh": "EUR_2023/MWh",
+    "electrolyzer_capex_eur_per_kw": "EUR_2023/kW",
+    "electrolyzer_specific_electricity_kwh_per_kg_h2": "kWh/kg_H2",
+    "pv_capex_eur_per_kw": "EUR_2023/kW",
+    "wind_capex_eur_per_kw": "EUR_2023/kW",
+    "h2_storage_capex_eur_per_kg_h2": "EUR_2023/kg_H2",
+    "uniform_real_wacc_fraction": "fraction",
+    "electricity_price_offset_eur_per_mwh": "EUR_2023/MWh",
+    "real_wacc_shift_fraction": "fraction",
+    "real_wacc_multiplier": "factor",
+    "electrolyzer_capex_factor": "factor",
+    "electrolyzer_specific_electricity_factor": "factor",
+    "h2_demand_multiplier": "factor"
+  },
+  "sites": {
+    "eu_2024:hamburg_moorburg": {
+      "parameters": {
+        "electrolyzer_capex_eur_per_kw": "EUR_2023/kW",
+        "electrolyzer_specific_electricity_kwh_per_kg_h2": "kWh/kg_H2",
+        "pv_capex_eur_per_kw": "EUR_2023/kW",
+        "wind_capex_eur_per_kw": "EUR_2023/kW",
+        "h2_storage_capex_eur_per_kg_h2": "EUR_2023/kg_H2",
+        "electricity_price_offset_eur_per_mwh": "EUR_2023/MWh",
+        "real_wacc_shift_fraction": "fraction",
+        "real_wacc_multiplier": "factor",
+        "electrolyzer_capex_factor": "factor",
+        "electrolyzer_specific_electricity_factor": "factor",
+        "h2_demand_multiplier": "factor",
+        "h2_delivery_profile": "registered_profile"
+      },
+      "profiles": [
+        "D0",
+        "D1",
+        "D2"
+      ],
+      "can_run": true
+    },
+    "eu_2024:huelva_la_rabida": {
+      "parameters": {
+        "electrolyzer_capex_eur_per_kw": "EUR_2023/kW",
+        "electrolyzer_specific_electricity_kwh_per_kg_h2": "kWh/kg_H2",
+        "pv_capex_eur_per_kw": "EUR_2023/kW",
+        "wind_capex_eur_per_kw": "EUR_2023/kW",
+        "h2_storage_capex_eur_per_kg_h2": "EUR_2023/kg_H2",
+        "electricity_price_offset_eur_per_mwh": "EUR_2023/MWh",
+        "real_wacc_shift_fraction": "fraction",
+        "real_wacc_multiplier": "factor",
+        "electrolyzer_capex_factor": "factor",
+        "electrolyzer_specific_electricity_factor": "factor",
+        "h2_demand_multiplier": "factor",
+        "h2_delivery_profile": "registered_profile"
+      },
+      "profiles": [
+        "D0",
+        "D1",
+        "D2"
+      ],
+      "can_run": true
+    },
+    "namibia:namibia": {
+      "parameters": {
+        "electricity_price_eur_per_mwh": "EUR_2023/MWh",
+        "electrolyzer_capex_eur_per_kw": "EUR_2023/kW",
+        "electrolyzer_specific_electricity_kwh_per_kg_h2": "kWh/kg_H2",
+        "pv_capex_eur_per_kw": "EUR_2023/kW",
+        "wind_capex_eur_per_kw": "EUR_2023/kW",
+        "h2_storage_capex_eur_per_kg_h2": "EUR_2023/kg_H2",
+        "electricity_price_offset_eur_per_mwh": "EUR_2023/MWh",
+        "real_wacc_shift_fraction": "fraction",
+        "real_wacc_multiplier": "factor",
+        "electrolyzer_capex_factor": "factor",
+        "electrolyzer_specific_electricity_factor": "factor"
+      },
+      "profiles": [
+        "D0"
+      ],
+      "can_run": true
+    }
+  },
+  "scenarios": {
+    "reference": "S0 · Referenz",
+    "red_monthly": "S1 · monatliche Zuordnung",
+    "red_hourly": "S2 · stündliche Zuordnung",
+    "off_grid": "S3 · ohne Netzanschluss"
+  },
+  "solvers": [
+    "scipy-highs",
+    "gurobi",
+    "auto"
+  ],
+  "metrics": {
+    "lcoh_eur_per_kg_h2": "LCOH [EUR/kg gelieferter H₂]",
+    "objective_eur_per_year": "Jahreskosten [EUR/a]",
+    "pv_capacity_mw": "PV-Leistung [MW]",
+    "wind_capacity_mw": "Windleistung [MW]",
+    "electrolyzer_capacity_mw": "PEM-Leistung [MW]",
+    "compressor_capacity_mw": "Kompressorleistung [MW]",
+    "h2_storage_capacity_kg": "H₂-Speicher [kg]",
+    "annual_grid_import_mwh": "Netzbezug [MWh/a]",
+    "annual_h2_delivered_kg": "Gelieferte H₂-Jahresmenge [kg/a]",
+    "annual_h2_produced_kg": "Produzierte H₂-Jahresmenge [kg/a]",
+    "annual_grid_emissions_kg_co2e": "Betriebliche Stromemissionen [kg CO₂e/a]",
+    "operational_emission_intensity_kg_co2e_per_kg_h2": "Betriebliche Stromteilbilanz [kg CO₂e/kg H₂]",
+    "annual_regulatory_non_renewable_electricity_mwh": "Regulatorischer nicht erneuerbarer Strom [MWh/a]",
+    "annual_regulatory_emissions_kg_co2e": "Regulatorische Stromemissionen [kg CO₂e/a]",
+    "regulatory_emission_intensity_kg_co2e_per_kg_h2": "Regulatorische Stromteilbilanz [kg CO₂e/kg H₂]",
+    "regulatory_emission_intensity_g_co2e_per_mj_h2": "Regulatorische Stromteilbilanz [g CO₂e/MJ H₂]",
+    "red_iii_ghg_savings_fraction": "Regulatorische THG-Einsparung [Anteil]",
+    "red_iii_maximum_product_intensity_kg_co2e_per_kg_h2": "Regulatorische THG-Grenze [kg CO₂e/kg H₂]",
+    "red_iii_maximum_product_intensity_g_co2e_per_mj": "Regulatorische THG-Grenze [g CO₂e/MJ H₂]",
+    "solver_runtime_seconds": "Solverlaufzeit [s]",
+    "optimality_gap_fraction": "Optimalitätslücke [Anteil]",
+    "max_electricity_balance_residual_mwh": "Maximales Strombilanzresiduum [MWh]",
+    "max_hydrogen_balance_residual_kg": "Maximales H₂-Bilanzresiduum [kg]",
+    "annual_cost_balance_residual_eur_per_year": "Kostenbilanzresiduum [EUR/a]",
+    "max_red_iii_temporal_deficit_mwh": "Maximales zeitliches EE-Deckungsdefizit [MWh]",
+    "physical_direct_renewable_share": "Direkte EE-Nutzung am Bedarf [Anteil]",
+    "annual_curtailment_mwh": "PV-/Wind-Abregelung [MWh/a]"
+  },
+  "checks": [
+    "eu_2024:hamburg_moorburg retains all parameters/profiles",
+    "eu_2024:huelva_la_rabida retains all parameters/profiles",
+    "namibia:namibia retains all parameters/profiles",
+    "All native model Python files unchanged"
+  ],
+  "evidence_role": "Current executable catalogue against prior inventory; no solver run. Native files hash checked."
+}
