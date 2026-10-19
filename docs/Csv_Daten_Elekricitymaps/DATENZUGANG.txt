@@ -1,0 +1,16 @@
+Electricity Maps: lokale Originaldaten — Stand 19.10.2026
+
+Originaldateien werden hier mangels belegter Weitergabefreigabe nicht veröffentlicht.
+Nutzungsbedingungen: https://help.electricitymaps.com/en/articles/11750446-terms-of-service
+Für Reproduktion die Dateien mit eigenem berechtigten Zugang selbst beziehen und hier ablegen.
+Die Daten werden nicht von der Software-/Codelizenz dieses Repositories umfasst.
+
+Originaldateinamen und SHA-256 (keine Faktorwerte):
+snapshots_2026-02-10_DE-2023-hourly.csv  086d430fd0e89756f18399b92e62afc9829697cb85ba36002f3f34c479c19ed7
+snapshots_2026-02-10_DE-2024-hourly.csv  300a82a9433299c993053c15b8890f7dc0cc76c0281a153dd869a16ba1c9c493
+snapshots_2026-02-10_ES-2023-hourly.csv  e4b8efd7d120893924b27a1df912e52d7c5d5f390ce318558c00dab80b060a51
+snapshots_2026-02-10_ES-2024-hourly.csv  d380368021fbbb73e8758a85302abd14d36e39b275c5bbcdc61ad122f718b68c
+
+Ziel: DE und ES, stündliche historische Dateien2023 und2024, Snapshot2026-02-10.
+Modellzuordnung: lokales Jahr2024 benötigt UTC31.12.2023 23:00 bis31.12.2024 23:00 exklusiv.
+Verwendete Spalte: Carbon intensity gCO₂eq/kWh (direct). Originale nicht umbenennen oder zeitlich verschieben.

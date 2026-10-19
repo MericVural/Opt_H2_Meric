@@ -1,0 +1,14 @@
+Green Grid Compass: lokale Originaldaten — Stand 19.10.2026
+
+Originaldateien werden hier mangels belegter Weitergabefreigabe nicht veröffentlicht.
+Nutzungsbedingungen: https://www.greengrid-compass.eu/terms-of-use
+Für Reproduktion die Dateien mit eigenem berechtigten Zugang selbst beziehen und hier ablegen.
+Die Daten werden nicht von der Software-/Codelizenz dieses Repositories umfasst.
+
+Originaldateinamen und SHA-256 (keine Faktorwerte):
+DE_LU_GhgEmissionIntensity_Hour_10_17_2026 8_31_54 PM.xlsx  859d6b03d8f5b2570b621954d2356ed7ec584072667d0479ee738129722a92b5
+DE_LU_GhgEmissionIntensity_Hour_10_17_2026 8_46_19 PM.xlsx  4e260ca6c8ed512d1001975cf53e8f10f3c0c491e59d0d75aa4657a75ad1e533
+ES_GhgEmissionIntensity_Hour_10_17_2026 8_31_07 PM.xlsx  db22915fa72aa720a273f6dc457e112de9a6965001ee80f2d5937a0bc3a2a01a
+
+Die vorhandenen Dateien sind XLSX, keine CSV. GGC wird aktuell nur diagnostisch verwendet.
+Eine ausdrückliche Erlaubnis zur Weitergabe vollständiger XLSX-Originale ist noch offen.

@@ -1,0 +1,63 @@
+Datenquellen und Nutzungshinweise — Stand 19.10.2026
+
+Dieses Paket bewahrt den Exportstand vom 18.10.2026. Die Dateien unter
+03_Modelleingaben und 04_Netzbezug_D0 enthalten die damaligen statischen
+EEA/Eurostat-Referenzen. Seit der aktiven Modellumstellung werden lokal
+stündliche Electricity-Maps-Direct-Faktoren verwendet; diese geschützten
+Originalreihen und daraus rekonstruierbaren Faktorinputs sind hier nicht enthalten.
+
+Wetter und daraus abgeleitete PV-/Windprofile:
+Weather data by Open-Meteo.com — https://open-meteo.com/
+Quelle: Open-Meteo Historical Weather API, ECMWF ERA5/Copernicus-Reanalyse.
+API-Daten: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+Anbieterhinweis: https://open-meteo.com/en/licence
+Verarbeitung: vorhandene Wetteraufbereitung auf Stundenmitten; daraus eigene
+PV-/Windberechnung und Zuordnung auf Intervallanfänge. CSVs wurden für dieses
+Paket unverändert aus den dokumentierten Projektartefakten kopiert.
+
+Deutsche Strompreise:
+Bundesnetzagentur | SMARD.de — https://www.smard.de/
+Day-Ahead DE/LU, Indikator4169; CC BY 4.0.
+https://www.smard.de/home/datennutzung
+https://creativecommons.org/licenses/by/4.0/
+
+Spanische Strompreise:
+Quelle: Red Eléctrica, REData, Indikator600 Precio mercado spot.
+https://www.ree.es/es/datos/apidatos
+Für diese nichtkommerzielle wissenschaftliche Veröffentlichung gilt die
+informative/akademische Nutzung nach Abschnitt5.1, keine pauschale CC-Lizenz:
+https://www.ree.es/es/aviso-legal
+Nachfolgend stehen die archivierten ursprünglichen Aktualisierungsangaben.
+
+Preisverarbeitung: historische2024-Preise auf reale EUR2023 mittels nationalem
+Eurostat-HVPI-Jahresverhältnis umgerechnet; negative Preise erhalten.
+Die zugrunde liegende Quelle ist weder Verfasser dieser Bearbeitung noch
+Unterstützer der Forschungsarbeit. Keine Anbieterlogos verwendet.
+
+Historische statische Faktorwerte:
+Quellen: European Environment Agency (EEA) und Eurostat.
+Eigene näherungsweise Brutto-/Netto-Umrechnung, keine direkt publizierten
+EEA-Netto-/Verbrauchs-/Stundenfaktoren. Diese Faktoren sind historische Referenzen.
+EEA: https://www.eea.europa.eu/en/analysis/indicators/greenhouse-gas-emission-intensity-of-1
+EEA-Wiederverwendung mit Quellenangabe: https://www.eea.europa.eu/en/legal-notice
+Eurostat: https://ec.europa.eu/eurostat/help/copyright-notice
+Source: Eurostat, prc_hicp_ainr (HVPI) und nrg_ind_peh (Brutto-/Nettoerzeugung).
+
+Netzbezugsdateien sind eigene Modellergebnisse, keine Netzbetreibermessungen.
+Preise und Quellenfaktoren darin behalten ihre jeweiligen Herkunftshinweise.
+Die Codelizenz des Repositories ersetzt diese Datenbedingungen nicht.
+Dateizuordnung.json dokumentiert CSV-Originalpfade, Verarbeitung und SHA-256.
+
+Ursprüngliche Aktualisierungsangaben der spanischen Monatsantworten:
+spot600_202401: REData last-update=2024-01-30T20:46:11.000+01:00; Spot600 last-update=2024-01-30T15:11:28.000+01:00
+spot600_202402: REData last-update=2024-02-28T20:46:24.000+01:00; Spot600 last-update=2024-02-28T14:29:57.000+01:00
+spot600_202403: REData last-update=2024-03-30T20:46:01.000+01:00; Spot600 last-update=2024-03-30T15:11:01.000+01:00
+spot600_202404: REData last-update=2024-04-29T20:46:01.000+02:00; Spot600 last-update=2024-04-29T14:33:38.000+02:00
+spot600_202405: REData last-update=2024-05-30T20:46:41.000+02:00; Spot600 last-update=2024-06-05T17:39:45.000+02:00
+spot600_202406: REData last-update=2024-06-29T20:46:32.000+02:00; Spot600 last-update=2024-07-12T08:33:34.000+02:00
+spot600_202407: REData last-update=2024-07-30T20:46:39.000+02:00; Spot600 last-update=2024-07-30T14:39:40.000+02:00
+spot600_202408: REData last-update=2024-08-30T20:46:37.000+02:00; Spot600 last-update=2024-09-02T09:32:23.000+02:00
+spot600_202409: REData last-update=2024-09-29T20:17:44.000+02:00; Spot600 last-update=2024-09-29T14:26:23.000+02:00
+spot600_202410: REData last-update=2024-10-30T20:46:36.000+01:00; Spot600 last-update=2024-12-10T10:20:04.000+01:00
+spot600_202411: REData last-update=2024-11-29T20:46:29.000+01:00; Spot600 last-update=2024-12-10T10:17:56.000+01:00
+spot600_202412: REData last-update=2024-12-30T20:46:50.000+01:00; Spot600 last-update=2024-12-30T14:07:30.000+01:00
